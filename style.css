@@ -1,0 +1,73 @@
+* {
+    box-sizing: border-box; margin: 0; padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f4f7f6; display: flex;
+    justify-content: center; padding: 2rem; color: #333;
+}
+
+.container {
+    background: #ffffff; width: 100%; max-width: 500px;
+    padding: 2rem; border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Estilos do Cabeçalho Dinâmico --- */
+.header-section { margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+
+.header-item { display: flex; align-items: center; gap: 0.5rem; }
+
+.editable-title, .editable-subtitle {
+    flex: 1; border: 1px dashed transparent; background: transparent;
+    padding: 0.2rem; outline: none; border-radius: 4px; transition: 0.2s;
+}
+
+.editable-title:focus, .editable-title:hover, 
+.editable-subtitle:focus, .editable-subtitle:hover {
+    border-color: #ccc; background: #fafafa;
+}
+
+.editable-title { font-size: 1.8rem; font-weight: bold; color: #2c3e50; }
+.editable-subtitle { font-size: 1rem; color: #7f8c8d; }
+
+.btn-remove {
+    background: #e74c3c; color: white; border: none;
+    border-radius: 4px; width: 24px; height: 24px;
+    cursor: pointer; font-size: 0.8rem; display: none;
+}
+.header-item:hover .btn-remove { display: block; } /* Só mostra o X ao passar o mouse */
+
+.btn-add-meta {
+    background: none; border: 1px dashed #bdc3c7; color: #7f8c8d;
+    padding: 0.5rem; border-radius: 5px; cursor: pointer; text-align: left;
+}
+.btn-add-meta:hover { background: #f9f9f9; color: #34495e; }
+
+/* --- Restante da Aplicação --- */
+.input-group { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+.input-group input { flex: 1; padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
+.input-group button { padding: 0.8rem; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+.input-group button:hover { background-color: #2980b9; }
+
+ul { list-style: none; }
+li { display: flex; align-items: center; padding: 1rem; background: #fdfdfd; border: 1px solid #eee; border-radius: 5px; margin-bottom: 0.5rem; gap: 1rem; }
+li.completed span { text-decoration: line-through; color: #bdc3c7; }
+input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
+
+/* --- Botão de Remover Item --- */
+.btn-remove-item {
+    margin-left: auto; /* Empurra o botão totalmente para a direita */
+    background: none;
+    color: #e74c3c;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0; /* Esconde por padrão */
+    transition: opacity 0.2s;
+}
+
+li:hover .btn-remove-item {
+    opacity: 1; /* Mostra ao passar o mouse no <li> */
+}
