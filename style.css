@@ -1,73 +1,244 @@
+/* --- CONFIGURAÇÕES GERAIS --- */
 * {
-    box-sizing: border-box; margin: 0; padding: 0;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-    background-color: #f4f7f6; display: flex;
-    justify-content: center; padding: 2rem; color: #333;
+    background-color: #f4f7f6;
+    display: flex;
+    justify-content: center;
+    padding: 2rem 1rem; /* 1rem nas laterais para evitar que o app cole na borda do celular */
+    color: #333;
+    min-height: 100vh;
 }
 
 .container {
-    background: #ffffff; width: 100%; max-width: 500px;
-    padding: 2rem; border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: #ffffff;
+    width: 100%;
+    max-width: 500px;
+    padding: 2rem 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    height: flex;
 }
 
-/* --- Estilos do Cabeçalho Dinâmico --- */
-.header-section { margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem; }
+/* --- CABEÇALHO DINÂMICO --- */
+.header-section {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
 
-.header-item { display: flex; align-items: center; gap: 0.5rem; }
+.header-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+}
 
 .editable-title, .editable-subtitle {
-    flex: 1; border: 1px dashed transparent; background: transparent;
-    padding: 0.2rem; outline: none; border-radius: 4px; transition: 0.2s;
+    flex: 1;
+    border: 1px dashed transparent;
+    background: transparent;
+    padding: 0.3rem;
+    outline: none;
+    border-radius: 6px;
+    transition: 0.2s;
+    width: 100%;
 }
 
 .editable-title:focus, .editable-title:hover, 
 .editable-subtitle:focus, .editable-subtitle:hover {
-    border-color: #ccc; background: #fafafa;
+    border-color: #cbd5e1;
+    background: #f8fafc;
 }
 
-.editable-title { font-size: 1.8rem; font-weight: bold; color: #2c3e50; }
-.editable-subtitle { font-size: 1rem; color: #7f8c8d; }
+.editable-title {
+    font-size: 1.6rem; /* Reduzido levemente para não quebrar em celulares pequenos */
+    font-weight: bold;
+    color: #1e293b;
+}
 
+.editable-subtitle {
+    font-size: 1rem;
+    color: #64748b;
+}
+
+/* Botão de remover título/subtítulo */
 .btn-remove {
-    background: #e74c3c; color: white; border: none;
-    border-radius: 4px; width: 24px; height: 24px;
-    cursor: pointer; font-size: 0.8rem; display: none;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: none; /* Escondido por padrão no desktop */
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Impede o botão de esmagar */
 }
-.header-item:hover .btn-remove { display: block; } /* Só mostra o X ao passar o mouse */
 
-.btn-add-meta {
-    background: none; border: 1px dashed #bdc3c7; color: #7f8c8d;
-    padding: 0.5rem; border-radius: 5px; cursor: pointer; text-align: left;
+/* --- FORMULÁRIO DE ADICIONAR ITEM --- */
+.input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    width: 100%;
 }
-.btn-add-meta:hover { background: #f9f9f9; color: #34495e; }
 
-/* --- Restante da Aplicação --- */
-.input-group { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
-.input-group input { flex: 1; padding: 0.8rem; border: 1px solid #ddd; border-radius: 5px; font-size: 1rem; }
-.input-group button { padding: 0.8rem; background-color: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
-.input-group button:hover { background-color: #2980b9; }
+.input-group input {
+    flex: 1;
+    padding: 0.8rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
 
-ul { list-style: none; }
-li { display: flex; align-items: center; padding: 1rem; background: #fdfdfd; border: 1px solid #eee; border-radius: 5px; margin-bottom: 0.5rem; gap: 1rem; }
-li.completed span { text-decoration: line-through; color: #bdc3c7; }
-input[type="checkbox"] { width: 1.2rem; height: 1.2rem; cursor: pointer; }
+.input-group input:focus {
+    border-color: #3b82f6;
+}
 
-/* --- Botão de Remover Item --- */
+.input-group button {
+    padding: 0.8rem 1.2rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    white-space: nowrap; /* Impede o texto do botão de quebrar linha incorretamente */
+    transition: background 0.2s;
+}
+
+.input-group button:hover {
+    background-color: #2563eb;
+}
+
+/* --- LISTA DE ITENS --- */
+ul {
+    list-style: none;
+}
+
+li {
+    display: flex;
+    align-items: center;
+    padding: 0.9rem 1rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-bottom: 0.6rem;
+    gap: 0.8rem;
+}
+
+li.completed span {
+    text-decoration: line-through;
+    color: #94a3b8;
+}
+
+li span {
+    flex: 1;
+    word-break: break-word; /* Força quebra de linha se o usuário digitar uma palavra gigante */
+    font-size: 1rem;
+}
+
+input[type="checkbox"] {
+    width: 1.25rem;
+    height: 1.25rem;
+    cursor: pointer;
+    accent-color: #3b82f6; /* Deixa o checkbox azul padrão condizente com o app */
+    flex-shrink: 0;
+}
+
+/* Botão de remover item da lista */
 .btn-remove-item {
-    margin-left: auto; /* Empurra o botão totalmente para a direita */
     background: none;
-    color: #e74c3c;
+    color: #94a3b8;
     border: none;
     font-size: 1.2rem;
     cursor: pointer;
-    opacity: 0; /* Esconde por padrão */
-    transition: opacity 0.2s;
+    padding: 0.2rem;
+    transition: color 0.2s;
+    opacity: 0; /* Invisível no desktop até o hover */
+    flex-shrink: 0;
 }
 
-li:hover .btn-remove-item {
-    opacity: 1; /* Mostra ao passar o mouse no <li> */
+.btn-remove-item:hover {
+    color: #ef4444;
+}
+
+/* Botões de adicionar metadados vazios */
+.btn-add-meta {
+    background: none;
+    border: 1px dashed #cbd5e1;
+    color: #64748b;
+    padding: 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+.btn-add-meta:hover {
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+/* --- REGRAS DE RESPONSIVIDADE (SMARTPHONES) --- */
+
+/* No Desktop, mostra os botões de exclusão apenas no Hover */
+@media (min-width: 769px) {
+    .header-item:hover .btn-remove {
+        display: flex;
+    }
+    li:hover .btn-remove-item {
+        opacity: 1;
+    }
+}
+
+/* Ajustes específicos para Celulares */
+@media (max-width: 768px) {
+    body {
+        padding: 0.5rem; /* Reduz o espaço externo para aproveitar a tela do celular */
+    }
+
+    .container {
+        padding: 1.2rem 1rem; /* Diminui o recuo interno do app */
+        border-radius: 8px;
+    }
+
+    /* Como não existe "hover" no celular, os botões de excluir ficam sempre visíveis para o toque */
+    .btn-remove {
+        display: flex; 
+        background: #fee2e2; /* Um vermelho mais suave para não poluir visualmente */
+        color: #ef4444;
+    }
+    
+    .btn-remove-item {
+        opacity: 1;
+        color: #ef4444; /* Fica vermelho direto para indicar ação no touch */
+    }
+
+    /* Ajuste crucial para o formulário de entrada */
+    .input-group {
+        flex-direction: column; /* Coloca o botão ABAIXO do input em telas muito estreitas */
+        gap: 0.6rem;
+    }
+
+    .input-group button {
+        width: 100%; /* Botão ganha largura total, facilitando o clique com o polegar */
+        padding: 0.9rem; /* Botão ligeiramente maior para área de toque ideal */
+    }
+    
+    .editable-title {
+        font-size: 1.4rem; /* Diminui o título para não quebrar layout */
+    }
 }
