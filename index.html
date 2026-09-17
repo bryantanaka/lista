@@ -2,29 +2,257 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista Compartilhada</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Meu Mercado</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f8; color: #333; }
+        
+        /* TELA DE LOGIN */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f6f8; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 350px; }
+        .login-card h2 { margin-bottom: 20px; }
+        .login-card input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 5px; border: 2px solid #ccc; border-radius: 8px; margin-bottom: 15px; }
+        .login-card button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        /* APP PRINCIPAL (Oculto inicialmente) */
+        #app-container { display: none; padding: 15px; padding-bottom: 90px; max-width: 600px; margin: auto; }
+        
+        /* Estilos anteriores mantidos */
+        h1 { text-align: center; margin-bottom: 15px; font-size: 1.5rem; }
+        .form-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
+        button.btn-add { background-color: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; }
+        
+        .produto-item { background: white; border-radius: 12px; margin-bottom: 12px; display: flex; flex-direction: row; overflow: hidden; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        .produto-item.comprado { background-color: #f1f3f5; opacity: 0.75; }
+        .produto-item.comprado .nome-produto { text-decoration: line-through; color: #6c757d; }
+        
+        .ordem-coluna { display: flex; flex-direction: column; width: 36px; min-width: 36px; background-color: #f8f9fa; border-right: 1px solid #e9ecef; }
+        .btn-ordem { flex: 1; width: 100%; background: transparent; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-ordem:first-child { border-bottom: 1px solid #e9ecef; }
+        
+        .produto-corpo { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .produto-header { display: flex; align-items: center; gap: 10px; }
+        .checkbox-custom { width: 20px; height: 20px; cursor: pointer; accent-color: #28a745; flex-shrink: 0; }
+        .info-main { flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .nome-produto { font-weight: 600; font-size: 1rem; word-break: break-word; }
+        .categoria-tag { font-size: 11px; background: #e7f1ff; color: #0056b3; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+        
+        .btn-remover { background: #ff4d4d; color: white; border: none; width: 32px; height: 32px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .produto-inputs { display: flex; gap: 10px; background: #f8f9fa; padding: 8px 10px; border-radius: 8px; }
+        .input-box { flex: 1; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+        .input-box input { width: 100%; padding: 6px 8px; font-size: 14px; background: white; border: 1px solid #ced4da; border-radius: 6px; }
+        
+        .total-container { position: fixed; bottom: 0; left: 0; right: 0; background-color: #1a1a1a; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; z-index: 1000; }
+        .total-valor { font-size: 1.4rem; font-weight: bold; color: #28a745; }
+    </style>
 </head>
 <body>
-    <main class="container">
-        <!-- Container dinâmico para Título e Subtítulo -->
-        <header id="header-section" class="header-section">
-            <!-- Renderizado via JS -->
-        </header>
 
-        <!-- Adicionar mais itens -->
-        <form id="add-item-form" class="input-group">
-            <input type="text" id="new-item-input" placeholder="O que precisa ser feito?" required>
-            <button type="submit">Adicionar Item</button>
-        </form>
+<!-- TELA DE LOGIN -->
+<div id="login-screen">
+    <div class="login-card">
+        <h2>Acesso ao Mercado</h2>
+        <input type="password" id="pin-input" maxlength="6" placeholder="******">
+        <button onclick="verificarSenha()">Entrar</button>
+        <p id="erro-senha" style="color: red; display: none; margin-top: 10px;">Senha incorreta!</p>
+    </div>
+</div>
 
-        <!-- Lista de itens -->
-        <ul id="items-list">
-            <!-- Itens via JS -->
-        </ul>
-    </main>
+<!-- APLICATIVO PRINCIPAL -->
+<div id="app-container">
+    <div class="container">
+        <h1>Lista de Compras 🛒</h1>
+        <div class="form-card">
+            <form id="formProduto" class="form-group">
+                <input type="text" id="nome" placeholder="Nome do produto" required>
+                <select id="categoria" required>
+                    <option value="" disabled selected>Selecionar Categoria</option>
+                    <option value="Higiene e Limpeza">Higiene e Limpeza</option>
+                    <option value="Congelados e resfriados">Congelados e resfriados</option>
+                    <option value="Mercearia seca">Mercearia seca</option>
+                    <option value="Bebidas">Bebidas</option>
+                    <option value="Hortifruti">Hortifruti</option>
+                </select>
+                <button type="submit" class="btn-add">+ Adicionar à Lista</button>
+            </form>
+        </div>
+        <div id="listaProdutos"></div>
+    </div>
+    <div class="total-container">
+        <span>Total no Carrinho:</span>
+        <span class="total-valor">R$ <span id="valorTotal">0.00</span></span>
+    </div>
+</div>
 
-    <script type="module" src="app.js"></script>
+<!-- Lógica de Senha Simples -->
+<script>
+    const SENHA_CORRETA = "012026"; // <--- ALTERE SUA SENHA DE 6 DÍGITOS AQUI
+
+    if (localStorage.getItem("app_auth") === "true") {
+        liberarAcesso();
+    }
+
+    function verificarSenha() {
+        const pin = document.getElementById('pin-input').value;
+        if (pin === SENHA_CORRETA) {
+            localStorage.setItem("app_auth", "true");
+            liberarAcesso();
+        } else {
+            document.getElementById('erro-senha').style.display = 'block';
+        }
+    }
+
+    function liberarAcesso() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+    }
+</script>
+
+<!-- Integração com Firebase (Módulo) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // =========================================================
+    // COLE AQUI AS CONFIGURAÇÕES DO SEU FIREBASE (PASSO 1.7)
+    // =========================================================
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuaP0Ex9UHYR_wbIM_dRATWwu4ikZ1PNY",
+        authDomain: "meu-mercado-app-b13b5.firebaseapp.com",
+        projectId: "meu-mercado-app-b13b5",
+        storageBucket: "meu-mercado-app-b13b5.firebasestorage.app",
+        messagingSenderId: "8372197117",
+        appId: "1:8372197117:web:237b4bc9f1beddc4a55094",
+        measurementId: "G-FRTR8MYXP9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const produtosCol = collection(db, "produtos");
+
+    let listaAtual = [];
+
+    function getOrdemSalva() { return JSON.parse(localStorage.getItem('ordem_produtos') || '[]'); }
+    function salvarOrdem(ordemIds) { localStorage.setItem('ordem_produtos', JSON.stringify(ordemIds)); }
+
+    // Listener em TEMPO REAL: atualiza a lista automaticamente sempre que houver mudança no banco
+    onSnapshot(produtosCol, (snapshot) => {
+        const produtos = [];
+        snapshot.forEach((doc) => {
+            produtos.push({ id: doc.id, ...doc.data() });
+        });
+
+        let ordemIds = getOrdemSalva();
+        produtos.sort((a, b) => {
+            if (a.comprado !== b.comprado) return a.comprado ? 1 : -1;
+            let idxA = ordemIds.indexOf(a.id);
+            let idxB = ordemIds.indexOf(b.id);
+            if (idxA === -1) idxA = 99999;
+            if (idxB === -1) idxB = 99999;
+            return idxA - idxB;
+        });
+
+        listaAtual = produtos;
+        renderizarLista(listaAtual);
+    });
+
+    // Adicionar Produto
+    document.getElementById('formProduto').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nome = document.getElementById('nome').value;
+        const categoria = document.getElementById('categoria').value;
+
+        const docRef = await addDoc(produtosCol, {
+            nome, categoria, quantidade: 1, preco: 0, comprado: false
+        });
+
+        let ordemIds = getOrdemSalva();
+        ordemIds.unshift(docRef.id);
+        salvarOrdem(ordemIds);
+        document.getElementById('formProduto').reset();
+    });
+
+    // Funções globais para serem chamadas no HTML
+    window.atualizarProduto = async (id, quantidade, preco, comprado) => {
+        const produtoRef = doc(db, "produtos", id);
+        await updateDoc(produtoRef, {
+            quantidade: parseFloat(quantidade) || 0,
+            preco: parseFloat(preco) || 0,
+            comprado: comprado
+        });
+    };
+
+    window.removerProduto = async (id) => {
+        if (confirm('Remover este item?')) {
+            await deleteDoc(doc(db, "produtos", id));
+            let ordemIds = getOrdemSalva().filter(itemId => itemId !== id);
+            salvarOrdem(ordemIds);
+        }
+    };
+
+    window.moverItem = (index, direcao) => {
+        const targetIndex = index + direcao;
+        if (targetIndex < 0 || targetIndex >= listaAtual.length) return;
+        if (listaAtual[index].comprado !== listaAtual[targetIndex].comprado) return;
+
+        const temp = listaAtual[index];
+        listaAtual[index] = listaAtual[targetIndex];
+        listaAtual[targetIndex] = temp;
+
+        salvarOrdem(listaAtual.map(p => p.id));
+        renderizarLista(listaAtual);
+    };
+
+    function renderizarLista(produtos) {
+        const lista = document.getElementById('listaProdutos');
+        lista.innerHTML = '';
+        let valorTotal = 0;
+
+        produtos.forEach((prod, index) => {
+            if (prod.comprado) valorTotal += (prod.quantidade * prod.preco);
+
+            const div = document.createElement('div');
+            div.className = `produto-item ${prod.comprado ? 'comprado' : ''}`;
+            
+            div.innerHTML = `
+                <div class="ordem-coluna">
+                    <button class="btn-ordem" onclick="moverItem(${index}, -1)">▲</button>
+                    <button class="btn-ordem" onclick="moverItem(${index}, 1)">▼</button>
+                </div>
+                <div class="produto-corpo">
+                    <div class="produto-header">
+                        <input type="checkbox" class="checkbox-custom" 
+                            onchange="atualizarProduto('${prod.id}', ${prod.quantidade}, ${prod.preco}, this.checked)" 
+                            ${prod.comprado ? 'checked' : ''}>
+                        <div class="info-main">
+                            <span class="nome-produto">${prod.nome}</span>
+                            <span class="categoria-tag">${prod.categoria}</span>
+                        </div>
+                        <button class="btn-remover" onclick="removerProduto('${prod.id}')">✕</button>
+                    </div>
+                    <div class="produto-inputs">
+                        <div class="input-box">
+                            <label>Qtd:</label>
+                            <input type="number" step="0.1" min="0" value="${prod.quantidade}" 
+                                onchange="atualizarProduto('${prod.id}', this.value, ${prod.preco}, ${prod.comprado})">
+                        </div>
+                        <div class="input-box">
+                            <label>R$:</label>
+                            <input type="number" step="0.01" min="0" value="${prod.preco}" 
+                                onchange="atualizarProduto('${prod.id}', ${prod.quantidade}, this.value, ${prod.comprado})">
+                        </div>
+                    </div>
+                </div>
+            `;
+            lista.appendChild(div);
+        });
+        document.getElementById('valorTotal').innerText = valorTotal.toFixed(2);
+    }
+</script>
 </body>
 </html>
