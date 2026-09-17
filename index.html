@@ -15,19 +15,25 @@
         .login-card input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 5px; border: 2px solid #ccc; border-radius: 8px; margin-bottom: 15px; }
         .login-card button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
         
-        /* APP PRINCIPAL (Oculto inicialmente) */
+        /* APP PRINCIPAL */
         #app-container { display: none; padding: 15px; padding-bottom: 90px; max-width: 600px; margin: auto; }
-        
-        /* Estilos anteriores mantidos */
         h1 { text-align: center; margin-bottom: 15px; font-size: 1.5rem; }
-        .form-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        h2.section-title { font-size: 1.1rem; color: #495057; margin: 20px 0 10px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; }
+        
+        /* FORMULÁRIO */
+        .form-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 15px; border: 1px solid #e2e8f0; }
         .form-group { display: flex; flex-direction: column; gap: 10px; }
         input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
         button.btn-add { background-color: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; }
         
+        /* FILTROS */
+        .filtros-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .btn-filtro { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #ced4da; background: white; color: #495057; cursor: pointer; transition: 0.2s; }
+        .btn-filtro.ativo { background: #343a40; color: white; border-color: #343a40; }
+
+        /* LISTA E CARDS */
         .produto-item { background: white; border-radius: 12px; margin-bottom: 12px; display: flex; flex-direction: row; overflow: hidden; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
-        .produto-item.comprado { background-color: #f1f3f5; opacity: 0.75; }
-        .produto-item.comprado .nome-produto { text-decoration: line-through; color: #6c757d; }
+        .produto-item.comprado { background-color: #f8f9fa; opacity: 0.85; }
         
         .ordem-coluna { display: flex; flex-direction: column; width: 36px; min-width: 36px; background-color: #f8f9fa; border-right: 1px solid #e9ecef; }
         .btn-ordem { flex: 1; width: 100%; background: transparent; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -35,10 +41,23 @@
         
         .produto-corpo { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
         .produto-header { display: flex; align-items: center; gap: 10px; }
-        .checkbox-custom { width: 20px; height: 20px; cursor: pointer; accent-color: #28a745; flex-shrink: 0; }
+        
+        /* BOTÃO CARRINHO */
+        .btn-cart { width: 40px; height: 40px; border-radius: 50%; border: none; background: #e9ecef; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
+        .btn-cart.ativo { background: #28a745; }
+        .produto-item.comprado .nome-produto { text-decoration: line-through; color: #6c757d; }
+
         .info-main { flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
         .nome-produto { font-weight: 600; font-size: 1rem; word-break: break-word; }
-        .categoria-tag { font-size: 11px; background: #e7f1ff; color: #0056b3; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+        
+        /* CORES DAS CATEGORIAS */
+        .categoria-tag { font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+        .cat-higieneelimpeza { background: #e0f2fe; color: #0369a1; }
+        .cat-congeladoseresfriados { background: #cffafe; color: #0f766e; }
+        .cat-merceariaseca { background: #ffedd5; color: #c2410c; }
+        .cat-bebidas { background: #f3e8ff; color: #7e22ce; }
+        .cat-hortifruti { background: #dcfce7; color: #15803d; }
+        .cat-outros { background: #f1f5f9; color: #475569; }
         
         .btn-remover { background: #ff4d4d; color: white; border: none; width: 32px; height: 32px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
@@ -66,6 +85,8 @@
 <div id="app-container">
     <div class="container">
         <h1>Lista de Compras 🛒</h1>
+        
+        <!-- Formulário -->
         <div class="form-card">
             <form id="formProduto" class="form-group">
                 <input type="text" id="nome" placeholder="Nome do produto" required>
@@ -76,21 +97,33 @@
                     <option value="Mercearia seca">Mercearia seca</option>
                     <option value="Bebidas">Bebidas</option>
                     <option value="Hortifruti">Hortifruti</option>
+                    <option value="Outros">Outros</option>
                 </select>
                 <button type="submit" class="btn-add">+ Adicionar à Lista</button>
             </form>
         </div>
-        <div id="listaProdutos"></div>
+
+        <!-- Filtros -->
+        <div class="filtros-container" id="containerFiltros">
+            <!-- Botões gerados via JS -->
+        </div>
+
+        <!-- Listas Separadas -->
+        <h2 class="section-title">Para Comprar</h2>
+        <div id="listaAComprar"></div>
+
+        <h2 class="section-title">No Carrinho</h2>
+        <div id="listaNoCarrinho"></div>
     </div>
+    
     <div class="total-container">
         <span>Total no Carrinho:</span>
         <span class="total-valor">R$ <span id="valorTotal">0.00</span></span>
     </div>
 </div>
 
-<!-- Lógica de Senha Simples -->
 <script>
-    const SENHA_CORRETA = "012026"; // <--- ALTERE SUA SENHA DE 6 DÍGITOS AQUI
+    const SENHA_CORRETA = "012026"; 
 
     if (localStorage.getItem("app_auth") === "true") {
         liberarAcesso();
@@ -112,13 +145,12 @@
     }
 </script>
 
-<!-- Integração com Firebase (Módulo) -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     // =========================================================
-    // COLE AQUI AS CONFIGURAÇÕES DO SEU FIREBASE (PASSO 1.7)
+    // COLE AQUI AS CONFIGURAÇÕES DO SEU FIREBASE
     // =========================================================
 
     const firebaseConfig = {
@@ -136,11 +168,35 @@
     const produtosCol = collection(db, "produtos");
 
     let listaAtual = [];
+    let filtrosAtivos = new Set();
+    const categoriasExistentes = ["Higiene e Limpeza", "Congelados e resfriados", "Mercearia seca", "Bebidas", "Hortifruti", "Outros"];
 
     function getOrdemSalva() { return JSON.parse(localStorage.getItem('ordem_produtos') || '[]'); }
     function salvarOrdem(ordemIds) { localStorage.setItem('ordem_produtos', JSON.stringify(ordemIds)); }
 
-    // Listener em TEMPO REAL: atualiza a lista automaticamente sempre que houver mudança no banco
+    // Criação dos botões de filtro
+    function inicializarFiltros() {
+        const container = document.getElementById('containerFiltros');
+        categoriasExistentes.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-filtro';
+            btn.innerText = cat;
+            btn.onclick = () => alternarFiltro(cat, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    window.alternarFiltro = (categoria, btnElement) => {
+        if (filtrosAtivos.has(categoria)) {
+            filtrosAtivos.delete(categoria);
+            btnElement.classList.remove('ativo');
+        } else {
+            filtrosAtivos.add(categoria);
+            btnElement.classList.add('ativo');
+        }
+        renderizarListas(listaAtual);
+    };
+
     onSnapshot(produtosCol, (snapshot) => {
         const produtos = [];
         snapshot.forEach((doc) => {
@@ -158,26 +214,31 @@
         });
 
         listaAtual = produtos;
-        renderizarLista(listaAtual);
+        renderizarListas(listaAtual);
     });
 
-    // Adicionar Produto
     document.getElementById('formProduto').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const nome = document.getElementById('nome').value;
-        const categoria = document.getElementById('categoria').value;
-
+        const nomeInput = document.getElementById('nome');
+        const categoriaInput = document.getElementById('categoria');
+        
         const docRef = await addDoc(produtosCol, {
-            nome, categoria, quantidade: 1, preco: 0, comprado: false
+            nome: nomeInput.value, 
+            categoria: categoriaInput.value, 
+            quantidade: 1, 
+            preco: 0, 
+            comprado: false
         });
 
         let ordemIds = getOrdemSalva();
         ordemIds.unshift(docRef.id);
         salvarOrdem(ordemIds);
-        document.getElementById('formProduto').reset();
+        
+        // Limpa apenas o nome, mantendo a última categoria selecionada
+        nomeInput.value = '';
+        nomeInput.focus();
     });
 
-    // Funções globais para serem chamadas no HTML
     window.atualizarProduto = async (id, quantidade, preco, comprado) => {
         const produtoRef = doc(db, "produtos", id);
         await updateDoc(produtoRef, {
@@ -195,8 +256,11 @@
         }
     };
 
-    window.moverItem = (index, direcao) => {
+    window.moverItem = (id, direcao) => {
+        const index = listaAtual.findIndex(p => p.id === id);
+        if (index === -1) return;
         const targetIndex = index + direcao;
+        
         if (targetIndex < 0 || targetIndex >= listaAtual.length) return;
         if (listaAtual[index].comprado !== listaAtual[targetIndex].comprado) return;
 
@@ -205,33 +269,26 @@
         listaAtual[targetIndex] = temp;
 
         salvarOrdem(listaAtual.map(p => p.id));
-        renderizarLista(listaAtual);
+        renderizarListas(listaAtual);
     };
 
-    function renderizarLista(produtos) {
-        const lista = document.getElementById('listaProdutos');
-        lista.innerHTML = '';
-        let valorTotal = 0;
-
-        produtos.forEach((prod, index) => {
-            if (prod.comprado) valorTotal += (prod.quantidade * prod.preco);
-
-            const div = document.createElement('div');
-            div.className = `produto-item ${prod.comprado ? 'comprado' : ''}`;
-            
-            div.innerHTML = `
+    function gerarHTMLProduto(prod) {
+        const classeCat = "cat-" + prod.categoria.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return `
+            <div class="produto-item ${prod.comprado ? 'comprado' : ''}">
                 <div class="ordem-coluna">
-                    <button class="btn-ordem" onclick="moverItem(${index}, -1)">▲</button>
-                    <button class="btn-ordem" onclick="moverItem(${index}, 1)">▼</button>
+                    <button class="btn-ordem" onclick="moverItem('${prod.id}', -1)">▲</button>
+                    <button class="btn-ordem" onclick="moverItem('${prod.id}', 1)">▼</button>
                 </div>
                 <div class="produto-corpo">
                     <div class="produto-header">
-                        <input type="checkbox" class="checkbox-custom" 
-                            onchange="atualizarProduto('${prod.id}', ${prod.quantidade}, ${prod.preco}, this.checked)" 
-                            ${prod.comprado ? 'checked' : ''}>
+                        <button type="button" class="btn-cart ${prod.comprado ? 'ativo' : ''}" 
+                            onclick="atualizarProduto('${prod.id}', ${prod.quantidade}, ${prod.preco}, ${!prod.comprado})">
+                            🛒
+                        </button>
                         <div class="info-main">
                             <span class="nome-produto">${prod.nome}</span>
-                            <span class="categoria-tag">${prod.categoria}</span>
+                            <span class="categoria-tag ${classeCat}">${prod.categoria}</span>
                         </div>
                         <button class="btn-remover" onclick="removerProduto('${prod.id}')">✕</button>
                     </div>
@@ -248,11 +305,41 @@
                         </div>
                     </div>
                 </div>
-            `;
-            lista.appendChild(div);
+            </div>
+        `;
+    }
+
+    function renderizarListas(produtos) {
+        const divAComprar = document.getElementById('listaAComprar');
+        const divCarrinho = document.getElementById('listaNoCarrinho');
+        
+        divAComprar.innerHTML = '';
+        divCarrinho.innerHTML = '';
+        let valorTotal = 0;
+
+        // Aplica o filtro selecionado (se houver algum ativo)
+        const produtosFiltrados = produtos.filter(p => filtrosAtivos.size === 0 || filtrosAtivos.has(p.categoria));
+
+        produtosFiltrados.forEach((prod) => {
+            if (prod.comprado) valorTotal += (prod.quantidade * prod.preco);
+
+            const html = gerarHTMLProduto(prod);
+            
+            if (prod.comprado) {
+                divCarrinho.innerHTML += html;
+            } else {
+                divAComprar.innerHTML += html;
+            }
         });
+
+        // Oculta títulos se a lista correspondente estiver vazia
+        divAComprar.previousElementSibling.style.display = divAComprar.innerHTML ? 'block' : 'none';
+        divCarrinho.previousElementSibling.style.display = divCarrinho.innerHTML ? 'block' : 'none';
+
         document.getElementById('valorTotal').innerText = valorTotal.toFixed(2);
     }
+
+    window.onload = inicializarFiltros;
 </script>
 </body>
 </html>
