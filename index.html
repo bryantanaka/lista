@@ -3,1002 +3,343 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Guia da Dieta</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-
+    <title>Meu Mercado</title>
     <style>
-        :root {
-            --primary: #10b981;
-            --danger: #ef4444;
-            --bg-color: #f8fafc;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f4f6f8; color: #333; }
         
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: #1e293b; -webkit-tap-highlight-color: transparent; }
-        .view { display: none; min-height: 100vh; padding-bottom: 90px; }
-        .view.active { display: block; animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* TELA DE LOGIN */
+        #login-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #f4f6f8; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2000; padding: 20px; }
+        .login-card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); text-align: center; width: 100%; max-width: 350px; }
+        .login-card h2 { margin-bottom: 20px; }
+        .login-card input { width: 100%; padding: 15px; font-size: 24px; text-align: center; letter-spacing: 5px; border: 2px solid #ccc; border-radius: 8px; margin-bottom: 15px; }
+        .login-card button { width: 100%; padding: 15px; background: #28a745; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        
+        /* APP PRINCIPAL */
+        #app-container { display: none; padding: 15px; padding-bottom: 90px; max-width: 600px; margin: auto; }
+        h1 { text-align: center; margin-bottom: 15px; font-size: 1.5rem; }
+        h2.section-title { font-size: 1.1rem; color: #495057; margin: 20px 0 10px 0; border-bottom: 2px solid #e2e8f0; padding-bottom: 5px; }
+        
+        /* FORMULÁRIO */
+        .form-card { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 15px; border: 1px solid #e2e8f0; }
+        .form-group { display: flex; flex-direction: column; gap: 10px; }
+        input, select, button { padding: 12px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; outline: none; }
+        button.btn-add { background-color: #28a745; color: white; border: none; font-weight: bold; cursor: pointer; }
+        
+        /* FILTROS */
+        .filtros-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .btn-filtro { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid #ced4da; background: white; color: #495057; cursor: pointer; transition: 0.2s; }
+        .btn-filtro.ativo { background: #343a40; color: white; border-color: #343a40; }
 
-        /* SVG Chart */
-        .circular-chart { display: block; margin: 0 auto; max-width: 100%; max-height: 220px; transition: all 0.3s; }
-        .circle-bg { fill: none; stroke: #e2e8f0; stroke-width: 3; }
-        .circle { fill: none; stroke-width: 3; stroke-linecap: round; transition: stroke-dasharray 0.5s ease-out, stroke 0.3s ease; }
-        .chart-text-main { font-size: 7.5px; font-weight: 700; fill: #1e293b; text-anchor: middle; dominant-baseline: central; transition: all 0.2s; }
-        .chart-text-sub { font-size: 3.5px; font-weight: 500; fill: #64748b; text-anchor: middle; dominant-baseline: central; }
+        /* LISTA E CARDS */
+        .produto-item { background: white; border-radius: 12px; margin-bottom: 12px; display: flex; flex-direction: row; overflow: hidden; border: 1px solid #e2e8f0; transition: all 0.3s ease; }
+        .produto-item.comprado { background-color: #f8f9fa; opacity: 0.85; }
+        
+        .ordem-coluna { display: flex; flex-direction: column; width: 36px; min-width: 36px; background-color: #f8f9fa; border-right: 1px solid #e9ecef; }
+        .btn-ordem { flex: 1; width: 100%; background: transparent; border: none; font-size: 11px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn-ordem:first-child { border-bottom: 1px solid #e9ecef; }
+        
+        .produto-corpo { flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .produto-header { display: flex; align-items: center; gap: 10px; }
+        
+        /* BOTÃO CARRINHO */
+        .btn-cart { width: 40px; height: 40px; border-radius: 50%; border: none; background: #e9ecef; font-size: 18px; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; transition: 0.2s; }
+        .btn-cart.ativo { background: #28a745; }
+        .produto-item.comprado .nome-produto { text-decoration: line-through; color: #6c757d; }
 
-        /* Components */
-        .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03); }
-        .input-field { width: 100%; padding: 0.75rem 1rem; border-radius: 0.75rem; border: 1px solid #cbd5e1; background-color: #f8fafc; transition: border-color 0.2s; }
-        .input-field:focus { outline: none; border-color: var(--primary); background-color: #ffffff; }
-        .fab { position: fixed; bottom: 5.5rem; right: 1.5rem; width: 3.5rem; height: 3.5rem; border-radius: 50%; background-color: var(--primary); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.4); font-size: 1.5rem; cursor: pointer; z-index: 40; transition: transform 0.2s; }
-        .fab:active { transform: scale(0.95); }
-
-        /* Bottom Nav */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-around; padding: 0.5rem 0; padding-bottom: max(0.5rem, env(safe-area-inset-bottom)); z-index: 50; }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: #64748b; font-size: 0.75rem; padding: 0.5rem; transition: color 0.2s; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item svg { width: 1.5rem; height: 1.5rem; margin-bottom: 0.25rem; }
-
-        /* Loading Spinner */
-        #loading-overlay { position: fixed; inset: 0; background: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #10b981; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .info-main { flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .nome-produto { font-weight: 600; font-size: 1rem; word-break: break-word; }
+        
+        /* CORES DAS CATEGORIAS */
+        .categoria-tag { font-size: 11px; padding: 3px 8px; border-radius: 12px; font-weight: 600; white-space: nowrap; }
+        .cat-higieneelimpeza { background: #e0f2fe; color: #0369a1; }
+        .cat-congeladoseresfriados { background: #cffafe; color: #0f766e; }
+        .cat-merceariaseca { background: #ffedd5; color: #c2410c; }
+        .cat-bebidas { background: #f3e8ff; color: #7e22ce; }
+        .cat-hortifruti { background: #dcfce7; color: #15803d; }
+        .cat-outros { background: #f1f5f9; color: #475569; }
+        
+        .btn-remover { background: #ff4d4d; color: white; border: none; width: 32px; height: 32px; border-radius: 8px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        .produto-inputs { display: flex; gap: 10px; background: #f8f9fa; padding: 8px 10px; border-radius: 8px; }
+        .input-box { flex: 1; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+        .input-box input { width: 100%; padding: 6px 8px; font-size: 14px; background: white; border: 1px solid #ced4da; border-radius: 6px; }
+        
+        .total-container { position: fixed; bottom: 0; left: 0; right: 0; background-color: #1a1a1a; color: #ffffff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; z-index: 1000; }
+        .total-valor { font-size: 1.4rem; font-weight: bold; color: #28a745; }
     </style>
 </head>
-<body class="antialiased">
+<body>
 
-    <!-- Loading Overlay -->
-    <div id="loading-overlay">
-        <div class="spinner mb-4"></div>
-        <div class="text-gray-500 font-medium">Sincronizando banco de dados...</div>
+<!-- TELA DE LOGIN -->
+<div id="login-screen">
+    <div class="login-card">
+        <h2>Acesso ao Mercado</h2>
+        <input type="password" id="pin-input" maxlength="6" placeholder="******">
+        <button onclick="verificarSenha()">Entrar</button>
+        <p id="erro-senha" style="color: red; display: none; margin-top: 10px;">Senha incorreta!</p>
     </div>
+</div>
 
-    <!-- View Lock / Perfil -->
-    <div id="view-lock" class="view p-6">
-        <div class="max-w-md mx-auto mt-8">
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800">Guia da Dieta</h1>
-                <p class="text-gray-500 text-sm mt-1">Selecione o perfil para entrar</p>
-            </div>
-            <div class="card p-1.5 mb-6 flex bg-gray-100 border border-gray-200">
-                <button type="button" id="btn-profile-bryan" onclick="selectProfile('Bryan')" class="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all bg-white text-emerald-600 shadow-sm">Bryan</button>
-                <button type="button" id="btn-profile-loui" onclick="selectProfile('Loui')" class="flex-1 py-2.5 rounded-lg font-bold text-sm transition-all text-gray-500">Loui</button>
-            </div>
-            <div class="card p-5 space-y-4">
-                <h2 class="text-base font-semibold border-b pb-2 text-gray-700" id="lock-title">Acesso - Bryan</h2>
-                <div>
-                    <label class="block text-sm text-gray-600 mb-1" id="lock-pass-label">Senha de Acesso</label>
-                    <input type="password" id="lock-password-input" class="input-field text-center text-xl tracking-widest" placeholder="••••" maxlength="20">
-                </div>
-                <div id="lock-error" class="text-red-500 text-xs font-semibold text-center hidden">Senha incorreta! Tente novamente.</div>
-                <button type="button" onclick="handleLockSubmit()" id="btn-lock-submit" class="w-full bg-emerald-500 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-95 transition-transform">
-                    Entrar
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Demais Views -->
-    <div id="view-onboarding" class="view p-6">
-        <div class="max-w-md mx-auto">
-            <h1 class="text-3xl font-bold text-gray-800 mb-2 mt-8">Bem-vindo(a)!</h1>
-            <p class="text-gray-500 mb-8">Vamos configurar seu perfil para começarmos a monitorar sua dieta.</p>
-            <form id="form-onboarding" class="space-y-4" autocomplete="off">
-                <div class="card p-4 space-y-4">
-                    <h2 class="text-lg font-semibold border-b pb-2">Informações Pessoais</h2>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-sm text-gray-600 mb-1">Peso (kg)</label><input type="number" step="0.1" id="onb-weight" class="input-field" required></div>
-                        <div><label class="block text-sm text-gray-600 mb-1">Altura (cm)</label><input type="number" id="onb-height" class="input-field" required></div>
-                        <div><label class="block text-sm text-gray-600 mb-1">Idade</label><input type="number" id="onb-age" class="input-field" required></div>
-                        <div><label class="block text-sm text-gray-600 mb-1">Sexo</label>
-                            <select id="onb-gender" class="input-field" required>
-                                <option value="M">Masculino</option>
-                                <option value="F">Feminino</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="card p-4 space-y-4">
-                    <h2 class="text-lg font-semibold border-b pb-2">Metas Diárias</h2>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Calorias (Kcal)</label><input type="number" id="onb-kcal" class="input-field border-emerald-300 bg-emerald-50"></div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div><label class="block text-xs text-gray-600 mb-1">Proteínas (g)</label><input type="number" id="onb-protein" class="input-field px-2"></div>
-                        <div><label class="block text-xs text-gray-600 mb-1">Carbos (g)</label><input type="number" id="onb-carbs" class="input-field px-2"></div>
-                        <div><label class="block text-xs text-gray-600 mb-1">Gorduras (g)</label><input type="number" id="onb-fat" class="input-field px-2"></div>
-                    </div>
-                    <p class="text-[11px] text-gray-400 text-center">Preencha 3 dos campos acima para autocompletar o faltante.</p>
-                </div>
-                <button type="submit" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-xl mt-6 shadow-md shadow-emerald-200 active:scale-95 transition-transform">
-                    Salvar e Começar
-                </button>
-            </form>
-        </div>
-    </div>
-
-    <div id="view-day-review" class="view p-6 bg-emerald-50">
-        <div class="max-w-md mx-auto mt-10">
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mb-4">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <h1 class="text-2xl font-bold text-gray-800">Novo dia!</h1>
-                <p class="text-gray-600 mt-2">Vamos revisar o dia de ontem antes de continuar.</p>
-            </div>
-            <div class="card p-5 mb-6 text-center">
-                <h2 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-2" id="review-date-label">Resumo</h2>
-                <div class="text-4xl font-bold mb-1" id="review-kcal-diff">0</div>
-                <p class="text-sm text-gray-500" id="review-kcal-desc">kcal restantes na meta</p>
-                <div class="mt-6 pt-4 border-t flex justify-around text-sm">
-                    <div><div class="font-bold text-blue-500" id="review-p">0g</div><div class="text-gray-400 text-xs">Proteína</div></div>
-                    <div><div class="font-bold text-orange-500" id="review-c">0g</div><div class="text-gray-400 text-xs">Carbo</div></div>
-                    <div><div class="font-bold text-yellow-500" id="review-f">0g</div><div class="text-gray-400 text-xs">Gordura</div></div>
-                </div>
-            </div>
-            <div class="card p-5 mb-8">
-                <label class="flex items-start space-x-3 cursor-pointer">
-                    <input type="checkbox" id="review-compensate" class="mt-1 w-5 h-5 text-emerald-500 rounded border-gray-300 focus:ring-emerald-500">
-                    <span class="text-sm text-gray-700">Deseja compensar a diferença de calorias na meta de hoje? <br><span class="text-xs text-gray-400">(Ajusta temporariamente sua meta de hoje)</span></span>
-                </label>
-            </div>
-            <button id="btn-finish-review" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition-transform">Começar Hoje</button>
-        </div>
-    </div>
-
-    <div id="view-dashboard" class="view p-4 md:p-6 main-tab">
-        <div class="max-w-md mx-auto">
-            <header class="flex justify-between items-center mb-6 pt-2">
-                <div>
-                    <h2 class="text-sm font-medium text-gray-500 uppercase tracking-wider" id="dash-date">Hoje</h2>
-                    <h1 class="text-2xl font-bold text-gray-800">Visão Geral</h1>
-                </div>
-                <div class="flex items-center space-x-2">
-                    <span id="dash-profile-badge" class="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700">Bryan</span>
-                    <button onclick="lockApp()" title="Bloquear / Trocar Perfil" class="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg transition-colors">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                    </button>
-                </div>
-            </header>
-            <div class="card p-4 mb-6 flex flex-col items-center justify-center cursor-pointer select-none" id="donut-container">
-                <svg viewBox="0 0 36 36" class="circular-chart">
-                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <path id="donut-path" class="circle" stroke="#10b981" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                    <!-- Ajuste vertical: y alterado para 15.5 e 22, com dominant-baseline centralizado no CSS -->
-                    <text x="18" y="15.5" id="donut-text-main" class="chart-text-main">0</text>
-                    <text x="18" y="22" id="donut-text-sub" class="chart-text-sub">/ 0 totais</text>
-                </svg>
-                <div class="text-[10px] text-gray-400 mt-2 text-center">Toque no gráfico ou caixas para alternar (Consumido/Restante)</div>
-            </div>
-            <div class="grid grid-cols-3 gap-3 mb-8">
-                <div class="card p-3 text-center cursor-pointer select-none macro-card" onclick="toggleMacroMode('p')">
-                    <div class="text-xs font-semibold text-blue-500 uppercase mb-1">Proteína</div>
-                    <div class="font-bold text-gray-800 text-lg leading-none" id="macro-p-main">0g</div>
-                    <div class="text-[10px] text-gray-400 mt-1" id="macro-p-sub">/ 0g</div>
-                </div>
-                <div class="card p-3 text-center cursor-pointer select-none macro-card" onclick="toggleMacroMode('c')">
-                    <div class="text-xs font-semibold text-orange-500 uppercase mb-1">Carbos</div>
-                    <div class="font-bold text-gray-800 text-lg leading-none" id="macro-c-main">0g</div>
-                    <div class="text-[10px] text-gray-400 mt-1" id="macro-c-sub">/ 0g</div>
-                </div>
-                <div class="card p-3 text-center cursor-pointer select-none macro-card" onclick="toggleMacroMode('f')">
-                    <div class="text-xs font-semibold text-yellow-500 uppercase mb-1">Gorduras</div>
-                    <div class="font-bold text-gray-800 text-lg leading-none" id="macro-f-main">0g</div>
-                    <div class="text-[10px] text-gray-400 mt-1" id="macro-f-sub">/ 0g</div>
-                </div>
-            </div>
-            <div>
-                <h3 class="text-lg font-bold text-gray-800 mb-4">Refeições de Hoje</h3>
-                <div id="meal-list" class="space-y-3 pb-8"></div>
-                <div id="empty-meals" class="text-center py-8 text-gray-400 hidden">Nenhuma refeição adicionada hoje.</div>
-            </div>
-            <div class="fab" id="fab-add-meal" onclick="openAddMealView()">+</div>
-        </div>
-    </div>
-
-    <div id="view-history" class="view p-4 md:p-6 main-tab">
-        <div class="max-w-md mx-auto">
-            <header class="mb-6 pt-2">
-                <h1 class="text-2xl font-bold text-gray-800">Histórico</h1>
-                <p class="text-sm text-gray-500">Seus registros de dias anteriores.</p>
-            </header>
-            <div id="history-list" class="space-y-4 pb-8"></div>
-            <div id="empty-history" class="text-center py-8 text-gray-400 hidden">Nenhum histórico disponível ainda.</div>
-        </div>
-    </div>
-
-    <div id="view-settings" class="view p-4 md:p-6 main-tab">
-        <div class="max-w-md mx-auto">
-            <header class="mb-6 pt-2">
-                <h1 class="text-2xl font-bold text-gray-800">Perfil & Metas</h1>
-            </header>
-            <form id="form-settings" class="space-y-4" autocomplete="off">
-                <div class="card p-4 space-y-4">
-                    <h2 class="text-lg font-semibold border-b pb-2">Informações Pessoais</h2>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div><label class="block text-sm text-gray-600 mb-1">Peso (kg)</label><input type="number" step="0.1" id="set-weight" class="input-field" required></div>
-                        <div><label class="block text-sm text-gray-600 mb-1">Altura (cm)</label><input type="number" id="set-height" class="input-field" required></div>
-                        <div><label class="block text-sm text-gray-600 mb-1">Idade</label><input type="number" id="set-age" class="input-field" required></div>
-                        <div><label class="block text-sm text-gray-600 mb-1">Sexo</label>
-                            <select id="set-gender" class="input-field" required><option value="M">Masculino</option><option value="F">Feminino</option></select>
-                        </div>
-                    </div>
-                </div>
-                <div class="card p-4 space-y-4">
-                    <h2 class="text-lg font-semibold border-b pb-2">Metas Diárias</h2>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Calorias (Kcal)</label><input type="number" id="set-kcal" class="input-field border-emerald-300 bg-emerald-50"></div>
-                    <div class="grid grid-cols-3 gap-2">
-                        <div><label class="block text-xs text-gray-600 mb-1">Proteínas (g)</label><input type="number" id="set-protein" class="input-field px-2"></div>
-                        <div><label class="block text-xs text-gray-600 mb-1">Carbos (g)</label><input type="number" id="set-carbs" class="input-field px-2"></div>
-                        <div><label class="block text-xs text-gray-600 mb-1">Gorduras (g)</label><input type="number" id="set-fat" class="input-field px-2"></div>
-                    </div>
-                    <p class="text-[11px] text-gray-400 text-center">Preencha 3 dos campos acima para autocompletar o faltante.</p>
-                </div>
-                <button type="submit" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-xl mt-4 shadow-md active:scale-95 transition-transform">Salvar Alterações</button>
-            </form>
-            <div class="card p-4 space-y-3 mt-4">
-                <h2 class="text-lg font-semibold border-b pb-2">Segurança (<span id="settings-profile-name">Bryan</span>)</h2>
-                <div><label class="block text-sm text-gray-600 mb-1">Nova Senha</label><input type="password" id="set-new-password" class="input-field" placeholder="Digite a nova senha"></div>
-                <button type="button" onclick="updateProfilePassword()" class="w-full bg-slate-100 text-slate-700 font-bold py-2.5 rounded-lg active:scale-95 transition-transform text-sm">Atualizar Senha</button>
-                <div class="pt-2">
-                    <button type="button" onclick="lockApp()" class="w-full bg-red-50 text-red-600 font-bold py-2.5 rounded-lg active:scale-95 transition-transform text-sm flex items-center justify-center space-x-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                        <span>Sair / Trocar Perfil</span>
-                    </button>
-                </div>
-            </div>
-            <!-- Botão de Reset Aprimorado -->
-            <div class="mt-8 border-t pt-6 pb-4">
-                <button onclick="resetDataDebug()" class="w-full bg-red-100 hover:bg-red-200 text-red-600 font-bold py-3.5 rounded-xl shadow-sm active:scale-95 transition-transform">
-                    Zerar Todos os Dados do Perfil
-                </button>
-                <p class="text-[11px] text-gray-400 text-center mt-2">Atenção: Esta ação não pode ser desfeita.</p>
-            </div>
-        </div>
-    </div>
-
-    <div id="view-add-meal" class="view p-4 md:p-6 bg-white">
-        <div class="max-w-md mx-auto">
-            <header class="flex items-center mb-6 pt-2">
-                <button onclick="navigateTab('view-dashboard')" class="p-2 -ml-2 text-gray-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button>
-                <h1 class="text-2xl font-bold text-gray-800 ml-2" id="meal-view-title">Nova Refeição</h1>
-            </header>
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">Categoria</label>
-                <select id="meal-category" class="input-field text-lg font-medium">
-                    <option value="Café da Manhã">Café da Manhã</option><option value="Almoço">Almoço</option><option value="Jantar">Jantar</option>
-                    <option value="Lanche">Lanche</option><option value="Pré-treino">Pré-treino</option><option value="Pós-treino">Pós-treino</option><option value="Outro">Outro</option>
-                </select>
-            </div>
-            <div class="mb-6">
-                <div class="flex justify-between items-end mb-3">
-                    <h3 class="font-bold text-gray-800">Alimentos Consumidos</h3>
-                    <button type="button" onclick="openSelectFoodView()" class="text-sm font-medium text-emerald-500 bg-emerald-50 px-3 py-1 rounded-full shadow-sm">+ Adicionar</button>
-                </div>
-                <div id="current-meal-foods" class="space-y-2 mb-4 empty:hidden"></div>
-                <div id="empty-meal-state" class="text-center p-6 border-2 border-dashed border-gray-200 rounded-xl text-gray-400 text-sm">Nenhum alimento adicionado.<br>Clique em "+ Adicionar"</div>
-            </div>
-            <div class="bg-gray-50 p-4 rounded-xl mb-6">
-                <div class="flex justify-between items-center border-b pb-2 mb-2"><span class="font-bold text-gray-600">Total Kcal</span><span class="font-bold text-xl text-emerald-600" id="meal-total-kcal">0</span></div>
-                <div class="flex justify-between text-sm text-gray-500">
-                    <span>Prot: <span id="meal-total-p" class="font-medium text-gray-800">0g</span></span>
-                    <span>Carb: <span id="meal-total-c" class="font-medium text-gray-800">0g</span></span>
-                    <span>Gord: <span id="meal-total-f" class="font-medium text-gray-800">0g</span></span>
-                </div>
-            </div>
-            <button type="button" onclick="saveMeal()" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-md active:scale-95 transition-transform mb-4">Salvar Refeição</button>
-        </div>
-    </div>
-
-    <div id="view-select-food" class="view p-4 md:p-6 bg-white">
-        <div class="max-w-md mx-auto">
-            <header class="flex items-center mb-4 pt-2">
-                <button onclick="showView('view-add-meal')" class="p-2 -ml-2 text-gray-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button>
-                <h1 class="text-2xl font-bold text-gray-800 ml-2">Alimentos</h1>
-            </header>
-            <button type="button" onclick="openCreateFoodView()" class="w-full border-2 border-emerald-500 text-emerald-600 font-bold py-3 rounded-xl mb-4 active:bg-emerald-50 transition-colors">+ Cadastrar Novo Alimento</button>
-            <div class="flex space-x-2 mb-4">
-                <div class="flex-1"><input type="text" id="search-food" class="input-field py-2" placeholder="Pesquisar..." oninput="renderFoodList()"></div>
-                <div class="w-1/3">
-                    <select id="sort-food" class="input-field py-2 px-1 text-sm" onchange="renderFoodList()">
-                        <option value="name">Nome (A-Z)</option><option value="kcal">Kcal ⬇</option><option value="p">Prot ⬇</option><option value="c">Carb ⬇</option><option value="f">Gord ⬇</option>
-                    </select>
-                </div>
-            </div>
-            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Banco de Alimentos</h3>
-            <div id="food-list" class="space-y-2 pb-6"></div>
-            <div id="empty-food-list" class="text-center py-6 text-gray-400 hidden text-sm">Nenhum alimento encontrado.</div>
-        </div>
-    </div>
-
-    <div id="view-create-food" class="view p-4 md:p-6 bg-white">
-        <div class="max-w-md mx-auto">
-            <header class="flex items-center mb-6 pt-2">
-                <button onclick="showView('view-select-food')" class="p-2 -ml-2 text-gray-500"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></button>
-                <h1 class="text-2xl font-bold text-gray-800 ml-2" id="food-view-title">Criar Alimento</h1>
-            </header>
-            <form id="form-create-food" class="space-y-4">
-                <div><label class="block text-sm font-medium text-gray-700 mb-1">Nome do Alimento</label><input type="text" id="cf-name" class="input-field" required placeholder="Ex: Arroz Branco Cozido"></div>
-                <div class="grid grid-cols-2 gap-4">
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Unidade</label>
-                        <select id="cf-unit" class="input-field" required>
-                            <option value="g">Gramas (g)</option>
-                            <option value="ml">Mililitros (ml)</option>
-                            <option value="un">Unidade (un)</option>
-                        </select>
-                    </div>
-                    <div><label class="block text-sm font-medium text-gray-700 mb-1">Porção (Qtd)</label><input type="number" id="cf-portion" class="input-field" required value="100" min="1"></div>
-                </div>
-                <div class="card p-4 bg-gray-50 mt-4">
-                    <h3 class="text-sm font-bold text-gray-700 mb-3 text-center">Macros por Porção</h3>
-                    <div class="grid grid-cols-3 gap-3">
-                        <div><label class="block text-xs font-medium text-blue-600 mb-1 text-center">Prot (g)</label><input type="number" step="0.1" id="cf-p" class="input-field text-center p-2" required value="0" oninput="calculateKcalAuto()"></div>
-                        <div><label class="block text-xs font-medium text-orange-600 mb-1 text-center">Carb (g)</label><input type="number" step="0.1" id="cf-c" class="input-field text-center p-2" required value="0" oninput="calculateKcalAuto()"></div>
-                        <div><label class="block text-xs font-medium text-yellow-600 mb-1 text-center">Gord (g)</label><input type="number" step="0.1" id="cf-f" class="input-field text-center p-2" required value="0" oninput="calculateKcalAuto()"></div>
-                    </div>
-                    <div class="mt-4 text-center">
-                        <label class="block text-xs text-gray-500 mb-1">Calorias (Kcal Auto-calculadas)</label>
-                        <input type="number" step="0.1" id="cf-kcal" class="input-field text-center font-bold text-emerald-600 bg-emerald-50 border-emerald-200" required readonly>
-                    </div>
-                </div>
-                <button type="submit" class="w-full bg-emerald-500 text-white font-bold py-4 rounded-xl shadow-md mt-6 active:scale-95 transition-transform">Salvar Alimento</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Modal Quantidade -->
-    <div id="modal-amount" class="fixed inset-0 bg-black bg-opacity-50 z-[60] hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-sm p-6 transform transition-transform scale-95" id="modal-amount-content">
-            <h2 class="text-lg font-bold text-gray-800 mb-1" id="modal-food-name">Nome</h2>
-            <p class="text-sm text-gray-500 mb-4">Em <span id="modal-food-portion">100g</span>: <span id="modal-food-kcal" class="font-medium">100kcal</span></p>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Quantidade consumida (<span id="modal-food-unit">g</span>)</label>
-            <input type="number" id="modal-amount-input" class="input-field text-xl font-bold text-center mb-6">
-            <div class="flex space-x-3">
-                <button onclick="closeAmountModal()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl active:bg-gray-200">Cancelar</button>
-                <button onclick="confirmAddFoodToMeal()" class="flex-1 py-3 bg-emerald-500 text-white font-bold rounded-xl active:bg-emerald-600">Adicionar</button>
-            </div>
-        </div>
-    </div>
-
-    <nav id="bottom-nav" class="bottom-nav hidden">
-        <div class="nav-item active" id="nav-dashboard" onclick="navigateTab('view-dashboard')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg><span>Início</span></div>
-        <div class="nav-item" id="nav-history" onclick="navigateTab('view-history')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg><span>Histórico</span></div>
-        <div class="nav-item" id="nav-settings" onclick="navigateTab('view-settings')"><svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg><span>Perfil</span></div>
-    </nav>
-
-    <script>
-        // ==========================================
-        // CONFIGURAÇÃO DO FIREBASE (INSIRA SUAS CREDENCIAIS AQUI)
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyDmAGaplto390oCc_nJdmBeY7tPMSsbZcQ",
-            authDomain: "guia-de-dieta.firebaseapp.com",
-            projectId: "guia-de-dieta",
-            storageBucket: "guia-de-dieta.firebasestorage.app",
-            messagingSenderId: "1003903474178",
-            appId: "1:1003903474178:web:b93494dcf2481a9171251b",
-            measurementId: "G-KJDS3D6NTV"
-        };
+<!-- APLICATIVO PRINCIPAL -->
+<div id="app-container">
+    <div class="container">
+        <h1>Lista de Compras 🛒</h1>
         
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        <!-- Formulário -->
+        <div class="form-card">
+            <form id="formProduto" class="form-group">
+                <input type="text" id="nome" placeholder="Nome do produto" required>
+                <select id="categoria" required>
+                    <option value="" disabled selected>Selecionar Categoria</option>
+                    <option value="Higiene e Limpeza">Higiene e Limpeza</option>
+                    <option value="Congelados e resfriados">Congelados e resfriados</option>
+                    <option value="Mercearia seca">Mercearia seca</option>
+                    <option value="Bebidas">Bebidas</option>
+                    <option value="Hortifruti">Hortifruti</option>
+                    <option value="Outros">Outros</option>
+                </select>
+                <button type="submit" class="btn-add">+ Adicionar à Lista</button>
+            </form>
+        </div>
 
-        // ESTADO GLOBAL
-        let appData = {
-            activeProfile: 'Bryan',
-            foods: [], 
-            profiles: {
-                Bryan: { password: '', profile: null, meals: {}, dailyAdjustments: {}, lastActiveDate: null },
-                Loui: { password: '', profile: null, meals: {}, dailyAdjustments: {}, lastActiveDate: null }
-            }
-        };
+        <!-- Filtros -->
+        <div class="filtros-container" id="containerFiltros">
+            <!-- Botões gerados via JS -->
+        </div>
 
-        let selectedLockProfile = 'Bryan';
-        let tempMeal = []; 
-        let selectedFoodToAdd = null; 
-        let editingMealId = null;
-        let editingMealDate = null;
-        let editingFoodId = null;
-        let displayModes = { kcal: 'consumed', p: 'consumed', c: 'consumed', f: 'consumed' };
+        <!-- Listas Separadas -->
+        <h2 class="section-title">Para Comprar</h2>
+        <div id="listaAComprar"></div>
 
-        document.addEventListener('DOMContentLoaded', loadDataFromFirebase);
+        <h2 class="section-title">No Carrinho</h2>
+        <div id="listaNoCarrinho"></div>
+    </div>
+    
+    <div class="total-container">
+        <span>Total no Carrinho:</span>
+        <span class="total-valor">R$ <span id="valorTotal">0.00</span></span>
+    </div>
+</div>
 
-        function getCurData() {
-            if (!appData.profiles[appData.activeProfile]) {
-                appData.profiles[appData.activeProfile] = { password: '', profile: null, meals: {}, dailyAdjustments: {}, lastActiveDate: null };
-            }
-            return appData.profiles[appData.activeProfile];
+<script>
+    const SENHA_CORRETA = "012026"; 
+
+    if (localStorage.getItem("app_auth") === "true") {
+        liberarAcesso();
+    }
+
+    function verificarSenha() {
+        const pin = document.getElementById('pin-input').value;
+        if (pin === SENHA_CORRETA) {
+            localStorage.setItem("app_auth", "true");
+            liberarAcesso();
+        } else {
+            document.getElementById('erro-senha').style.display = 'block';
         }
+    }
 
-        async function loadDataFromFirebase() {
-            try {
-                const docRef = db.collection("guiaDaDieta").doc("dadosPrincipais");
-                const doc = await docRef.get();
-                if (doc.exists) {
-                    appData = doc.data();
-                    if(!appData.foods) appData.foods = [];
-                    if(appData.profiles?.Bryan?.foods) {
-                        appData.foods = [...appData.profiles.Bryan.foods];
-                        delete appData.profiles.Bryan.foods;
-                    }
-                    if(appData.profiles?.Loui?.foods) delete appData.profiles.Loui.foods;
-                }
-            } catch (error) {
-                console.error("Erro ao carregar do Firebase:", error);
-                const saved = localStorage.getItem('guiaDaDietaBackup');
-                if (saved) appData = JSON.parse(saved);
-            }
-            document.getElementById('loading-overlay').style.display = 'none';
-            initApp();
+    function liberarAcesso() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-container').style.display = 'block';
+    }
+</script>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    // =========================================================
+    // COLE AQUI AS CONFIGURAÇÕES DO SEU FIREBASE
+    // =========================================================
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCuaP0Ex9UHYR_wbIM_dRATWwu4ikZ1PNY",
+        authDomain: "meu-mercado-app-b13b5.firebaseapp.com",
+        projectId: "meu-mercado-app-b13b5",
+        storageBucket: "meu-mercado-app-b13b5.firebasestorage.app",
+        messagingSenderId: "8372197117",
+        appId: "1:8372197117:web:237b4bc9f1beddc4a55094",
+        measurementId: "G-FRTR8MYXP9"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const produtosCol = collection(db, "produtos");
+
+    let listaAtual = [];
+    let filtrosAtivos = new Set();
+    const categoriasExistentes = ["Higiene e Limpeza", "Congelados e resfriados", "Mercearia seca", "Bebidas", "Hortifruti", "Outros"];
+
+    function getOrdemSalva() { return JSON.parse(localStorage.getItem('ordem_produtos') || '[]'); }
+    function salvarOrdem(ordemIds) { localStorage.setItem('ordem_produtos', JSON.stringify(ordemIds)); }
+
+    // Criação dos botões de filtro
+    function inicializarFiltros() {
+        const container = document.getElementById('containerFiltros');
+        categoriasExistentes.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-filtro';
+            btn.innerText = cat;
+            btn.onclick = () => alternarFiltro(cat, btn);
+            container.appendChild(btn);
+        });
+    }
+
+    window.alternarFiltro = (categoria, btnElement) => {
+        if (filtrosAtivos.has(categoria)) {
+            filtrosAtivos.delete(categoria);
+            btnElement.classList.remove('ativo');
+        } else {
+            filtrosAtivos.add(categoria);
+            btnElement.classList.add('ativo');
         }
-
-        async function saveData() {
-            localStorage.setItem('guiaDaDietaBackup', JSON.stringify(appData));
-            try {
-                await db.collection("guiaDaDieta").doc("dadosPrincipais").set(appData);
-            } catch (error) {
-                console.error("Erro ao salvar no Firebase. Dados salvos localmente.", error);
-            }
-        }
-
-        function getDietDateStr(dateObj = new Date()) {
-            let d = new Date(dateObj.getTime());
-            d.setHours(d.getHours() - 3);
-            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-        }
-
-        function formatDisplayDate(dateStr) {
-            const [y, m, d] = dateStr.split('-');
-            const months = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-            return `${d} de ${months[parseInt(m)-1]}`;
-        }
-
-        function showView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
-            window.scrollTo(0,0);
-            
-            const mainTabs = ['view-dashboard', 'view-history', 'view-settings'];
-            const bottomNav = document.getElementById('bottom-nav');
-            if (mainTabs.includes(viewId)) bottomNav.classList.remove('hidden');
-            else bottomNav.classList.add('hidden');
-        }
-
-        function navigateTab(tabId) {
-            showView(tabId);
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            if(tabId === 'view-dashboard') { document.getElementById('nav-dashboard').classList.add('active'); renderDashboard(); }
-            else if(tabId === 'view-history') { document.getElementById('nav-history').classList.add('active'); renderHistory(); }
-            else if(tabId === 'view-settings') { document.getElementById('nav-settings').classList.add('active'); loadSettingsForm(); }
-        }
-
-        function setupMacroAutocomplete(kcalId, pId, cId, fId) {
-            const fields = [document.getElementById(kcalId), document.getElementById(pId), document.getElementById(cId), document.getElementById(fId)];
-            
-            fields.forEach(el => {
-                if (!el) return;
-                el.addEventListener('input', () => {
-                    const kcalEl = fields[0], pEl = fields[1], cEl = fields[2], fEl = fields[3];
-                    const valKcal = kcalEl.value !== '' ? parseFloat(kcalEl.value) : null;
-                    const valP = pEl.value !== '' ? parseFloat(pEl.value) : null;
-                    const valC = cEl.value !== '' ? parseFloat(cEl.value) : null;
-                    const valF = fEl.value !== '' ? parseFloat(fEl.value) : null;
-
-                    const filled = [
-                        { name: 'kcal', val: valKcal, el: kcalEl },
-                        { name: 'p', val: valP, el: pEl },
-                        { name: 'c', val: valC, el: cEl },
-                        { name: 'f', val: valF, el: fEl }
-                    ].filter(item => item.val !== null && !isNaN(item.val) && item.val >= 0);
-
-                    if (filled.length === 3) {
-                        const missing = [{ name: 'kcal', el: kcalEl }, { name: 'p', el: pEl }, { name: 'c', el: cEl }, { name: 'f', el: fEl }].find(item => item.el.value.trim() === '');
-                        if (missing) {
-                            if (missing.name === 'kcal') {
-                                missing.el.value = Math.round((valP * 4) + (valC * 4) + (valF * 9));
-                            } else if (missing.name === 'p') {
-                                missing.el.value = Math.max(0, Math.round((valKcal - (valC * 4) - (valF * 9)) / 4));
-                            } else if (missing.name === 'c') {
-                                missing.el.value = Math.max(0, Math.round((valKcal - (valP * 4) - (valF * 9)) / 4));
-                            } else if (missing.name === 'f') {
-                                missing.el.value = Math.max(0, Math.round((valKcal - (valP * 4) - (valC * 4)) / 9));
-                            }
-                        }
-                    }
-                });
-            });
-        }
-
-        function initApp() {
-            setupMacroAutocomplete('onb-kcal', 'onb-protein', 'onb-carbs', 'onb-fat');
-            setupMacroAutocomplete('set-kcal', 'set-protein', 'set-carbs', 'set-fat');
-            document.getElementById('form-onboarding').addEventListener('submit', handleOnboardingSubmit);
-            document.getElementById('form-settings').addEventListener('submit', handleSettingsSubmit);
-            document.getElementById('form-create-food').addEventListener('submit', handleCreateFoodSubmit);
-            document.getElementById('donut-container').addEventListener('click', () => {
-                displayModes.kcal = displayModes.kcal === 'consumed' ? 'remaining' : 'consumed';
-                updateDashboardCharts();
-            });
-            showLockView();
-        }
-
-        function showLockView() {
-            selectedLockProfile = appData.activeProfile || 'Bryan';
-            updateLockUI();
-            showView('view-lock');
-        }
-
-        function selectProfile(pName) {
-            selectedLockProfile = pName;
-            updateLockUI();
-        }
-
-        function updateLockUI() {
-            const btnBryan = document.getElementById('btn-profile-bryan'), btnLoui = document.getElementById('btn-profile-loui');
-            const title = document.getElementById('lock-title'), label = document.getElementById('lock-pass-label'), input = document.getElementById('lock-password-input');
-            const submitBtn = document.getElementById('btn-lock-submit'), err = document.getElementById('lock-error');
-
-            err.classList.add('hidden'); input.value = '';
-
-            if (selectedLockProfile === 'Bryan') {
-                btnBryan.className = "flex-1 py-2.5 rounded-lg font-bold text-sm transition-all bg-white text-emerald-600 shadow-sm";
-                btnLoui.className = "flex-1 py-2.5 rounded-lg font-bold text-sm transition-all text-gray-500";
-            } else {
-                btnLoui.className = "flex-1 py-2.5 rounded-lg font-bold text-sm transition-all bg-white text-emerald-600 shadow-sm";
-                btnBryan.className = "flex-1 py-2.5 rounded-lg font-bold text-sm transition-all text-gray-500";
-            }
-
-            title.textContent = `Acesso - ${selectedLockProfile}`;
-            const targetProfile = appData.profiles[selectedLockProfile];
-            
-            if (!targetProfile || !targetProfile.password) {
-                label.textContent = "Crie uma senha para este perfil"; input.placeholder = "Digite uma nova senha"; submitBtn.textContent = "Criar Senha e Entrar";
-            } else {
-                label.textContent = "Senha de Acesso"; input.placeholder = "••••"; submitBtn.textContent = "Entrar";
-            }
-        }
-
-        function handleLockSubmit() {
-            const inputPass = document.getElementById('lock-password-input').value.trim();
-            const err = document.getElementById('lock-error');
-
-            if (!inputPass) { err.textContent = "Por favor, digite uma senha."; err.classList.remove('hidden'); return; }
-            if (!appData.profiles[selectedLockProfile]) appData.profiles[selectedLockProfile] = { password: '', profile: null, meals: {}, dailyAdjustments: {}, lastActiveDate: null };
-
-            const targetProfile = appData.profiles[selectedLockProfile];
-
-            if (!targetProfile.password || targetProfile.password === inputPass) {
-                if(!targetProfile.password) targetProfile.password = inputPass;
-                appData.activeProfile = selectedLockProfile;
-                saveData();
-                unlockAndStartApp();
-            } else {
-                err.textContent = "Senha incorreta! Tente novamente."; err.classList.remove('hidden');
-            }
-        }
-
-        function unlockAndStartApp() {
-            const cur = getCurData();
-            const currentDietDate = getDietDateStr();
-
-            if (!cur.profile) {
-                showView('view-onboarding');
-            } else {
-                if (cur.lastActiveDate && cur.lastActiveDate !== currentDietDate) {
-                    prepareDayReview(cur.lastActiveDate, currentDietDate);
-                } else {
-                    cur.lastActiveDate = currentDietDate;
-                    saveData();
-                    navigateTab('view-dashboard');
-                }
-            }
-        }
-
-        window.lockApp = function() { showLockView(); }
-
-        window.updateProfilePassword = function() {
-            const passInput = document.getElementById('set-new-password');
-            const newPass = passInput.value.trim();
-            if (!newPass) return alert("Digite a nova senha.");
-            getCurData().password = newPass;
-            saveData();
-            passInput.value = '';
-            alert("Senha alterada com sucesso!");
-        }
-
-        function getDailySummary(dateStr) {
-            const cur = getCurData();
-            const meals = cur.meals[dateStr] || [];
-            let consumed = { kcal: 0, p: 0, c: 0, f: 0 };
-            meals.forEach(m => { consumed.kcal += m.kcal; consumed.p += m.p; consumed.c += m.c; consumed.f += m.f; });
-            let dailyGoalKcal = cur.profile ? cur.profile.goalKcal : 0;
-            if (cur.dailyAdjustments && cur.dailyAdjustments[dateStr]) dailyGoalKcal += cur.dailyAdjustments[dateStr];
-
-            return {
-                consumed,
-                goals: { kcal: dailyGoalKcal, p: cur.profile?.goalP || 0, c: cur.profile?.goalC || 0, f: cur.profile?.goalF || 0 }
-            };
-        }
-
-        function updateDashboardCharts() {
-            const summary = getDailySummary(getCurData().lastActiveDate || getDietDateStr());
-            const c = summary.consumed, g = summary.goals;
-            const mainText = document.getElementById('donut-text-main'), subText = document.getElementById('donut-text-sub'), donutPath = document.getElementById('donut-path');
-
-            let pct = g.kcal > 0 ? (c.kcal / g.kcal) * 100 : 0;
-            let isOver = c.kcal > g.kcal;
-            
-            donutPath.style.stroke = isOver ? 'var(--danger)' : 'var(--primary)';
-            donutPath.style.strokeDasharray = `${Math.min(pct, 100)}, 100`;
-
-            if (displayModes.kcal === 'consumed') {
-                mainText.textContent = Math.round(c.kcal); subText.textContent = `/ ${Math.round(g.kcal)} totais`;
-                if(isOver) { subText.textContent += ` (Passou)`; subText.style.fill = 'var(--danger)'; mainText.style.fill = 'var(--danger)'; }
-                else { subText.style.fill = '#64748b'; mainText.style.fill = '#1e293b'; }
-            } else {
-                let remaining = g.kcal - c.kcal;
-                mainText.textContent = Math.round(Math.abs(remaining));
-                if (remaining < 0) { subText.textContent = `/ ${Math.round(g.kcal)} totais`; mainText.textContent = "-" + Math.round(Math.abs(remaining)); subText.style.fill = 'var(--danger)'; mainText.style.fill = 'var(--danger)'; }
-                else { subText.textContent = `/ ${Math.round(g.kcal)} restantes`; subText.style.fill = '#64748b'; mainText.style.fill = '#1e293b'; }
-            }
-
-            updateMacroUI('p', c.p, g.p); updateMacroUI('c', c.c, g.c); updateMacroUI('f', c.f, g.f);
-        }
-
-        window.toggleMacroMode = function(type) { displayModes[type] = displayModes[type] === 'consumed' ? 'remaining' : 'consumed'; updateDashboardCharts(); }
-
-        function updateMacroUI(type, consumed, goal) {
-            const main = document.getElementById(`macro-${type}-main`), sub = document.getElementById(`macro-${type}-sub`);
-            let isOver = consumed > goal;
-            
-            if (displayModes[type] === 'consumed') {
-                main.textContent = Math.round(consumed) + "g"; sub.textContent = `/ ${Math.round(goal)}g cons.`;
-            } else {
-                let rem = goal - consumed;
-                main.textContent = (rem < 0 ? "-" : "") + Math.round(Math.abs(rem)) + "g"; sub.textContent = `/ ${Math.round(goal)}g rest.`;
-            }
-            if(isOver) { main.classList.add('text-red-500'); main.classList.remove('text-gray-800'); }
-            else { main.classList.remove('text-red-500'); main.classList.add('text-gray-800'); }
-        }
-
-        function renderDashboard() {
-            const todayStr = getCurData().lastActiveDate || getDietDateStr();
-            document.getElementById('dash-date').textContent = `Hoje, ${formatDisplayDate(todayStr)}`;
-            document.getElementById('dash-profile-badge').textContent = appData.activeProfile;
-            updateDashboardCharts();
-            renderMealList(todayStr, 'meal-list', 'empty-meals', true);
-        }
-
-        function renderMealList(dateStr, containerId, emptyId, isDashboard) {
-            const meals = getCurData().meals[dateStr] || [];
-            const listEl = document.getElementById(containerId), emptyEl = document.getElementById(emptyId);
-
-            listEl.innerHTML = '';
-            if (meals.length === 0) {
-                emptyEl.classList.remove('hidden');
-            } else {
-                emptyEl.classList.add('hidden');
-                meals.forEach(m => {
-                    let desc = m.foods.map(f => {
-                        let foodObj = appData.foods.find(dbF => dbF.id == f.foodId);
-                        return foodObj ? foodObj.name : 'Alimento removido';
-                    }).join(', ');
-                    if(desc.length > 35) desc = desc.substring(0, 32) + '...';
-
-                    let actionsHtml = isDashboard ? `
-                        <div class="flex space-x-3 mt-2 text-xs">
-                            <button onclick="editMeal('${dateStr}', ${m.id})" class="text-blue-500 font-medium p-1 -ml-1">Editar</button>
-                            <button onclick="directDeleteMeal('${dateStr}', ${m.id})" class="text-red-400 font-medium p-1 flex items-center"><svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Excluir</button>
-                        </div>
-                    ` : '';
-
-                    listEl.insertAdjacentHTML('beforeend', `
-                        <div class="card p-4 flex justify-between items-center">
-                            <div class="flex-1 overflow-hidden pr-2">
-                                <h4 class="font-bold text-gray-800">${m.category}</h4>
-                                <p class="text-xs text-gray-500 truncate">${desc}</p>
-                                ${actionsHtml}
-                            </div>
-                            <div class="text-right flex flex-col items-end justify-center">
-                                <div class="font-bold text-emerald-600">${Math.round(m.kcal)} kcal</div>
-                                <div class="text-[10px] text-gray-400 mt-1">P:${Math.round(m.p)} C:${Math.round(m.c)} G:${Math.round(m.f)}</div>
-                            </div>
-                        </div>
-                    `);
-                });
-            }
-        }
-
-        window.openAddMealView = function() {
-            editingMealId = null; editingMealDate = null; tempMeal = [];
-            document.getElementById('meal-view-title').textContent = "Nova Refeição";
-            document.getElementById('meal-category').value = "Almoço";
-            updateAddMealUI();
-            showView('view-add-meal');
-        }
-
-        window.editMeal = function(dateStr, mealId) {
-            const meal = (getCurData().meals[dateStr] || []).find(m => m.id === mealId);
-            if(!meal) return;
-            editingMealId = mealId; editingMealDate = dateStr; tempMeal = JSON.parse(JSON.stringify(meal.foods));
-            document.getElementById('meal-view-title').textContent = "Editar Refeição";
-            document.getElementById('meal-category').value = meal.category;
-            updateAddMealUI();
-            showView('view-add-meal');
-        }
-
-        window.directDeleteMeal = function(dateStr, mealId) {
-            if(!confirm("Excluir esta refeição?")) return;
-            const cur = getCurData();
-            if(cur.meals[dateStr]) {
-                cur.meals[dateStr] = cur.meals[dateStr].filter(m => m.id !== mealId);
-                saveData();
-                renderDashboard();
-            }
-        }
-
-        function updateAddMealUI() {
-            const listEl = document.getElementById('current-meal-foods'), emptyEl = document.getElementById('empty-meal-state');
-            listEl.innerHTML = '';
-            let total = { kcal: 0, p: 0, c: 0, f: 0 };
-
-            if (tempMeal.length === 0) {
-                emptyEl.classList.remove('hidden');
-            } else {
-                emptyEl.classList.add('hidden');
-                tempMeal.forEach((item, index) => {
-                    const f = appData.foods.find(dbF => dbF.id == item.foodId);
-                    if(!f) return;
-                    const prop = item.amount / f.portion;
-                    total.kcal += f.kcal * prop; total.p += f.p * prop; total.c += f.c * prop; total.f += f.f * prop;
-                    
-                    listEl.insertAdjacentHTML('beforeend', `
-                        <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg border border-gray-100">
-                            <div>
-                                <div class="font-medium text-sm text-gray-800">${f.name}</div>
-                                <div class="text-xs text-gray-500">${item.amount}${f.unit} • ${Math.round(f.kcal * prop)} kcal</div>
-                            </div>
-                            <button onclick="removeTempFood(${index})" class="text-red-400 p-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                        </div>
-                    `);
-                });
-            }
-            document.getElementById('meal-total-kcal').textContent = Math.round(total.kcal);
-            document.getElementById('meal-total-p').textContent = Math.round(total.p) + "g";
-            document.getElementById('meal-total-c').textContent = Math.round(total.c) + "g";
-            document.getElementById('meal-total-f').textContent = Math.round(total.f) + "g";
-        }
-
-        window.removeTempFood = function(index) { tempMeal.splice(index, 1); updateAddMealUI(); }
-
-        window.saveMeal = function() {
-            if(tempMeal.length === 0) return alert("Adicione alimentos à refeição.");
-            let total = { kcal: 0, p: 0, c: 0, f: 0 };
-            tempMeal.forEach(item => {
-                const f = appData.foods.find(dbF => dbF.id == item.foodId);
-                if(f) { const prop = item.amount / f.portion; total.kcal += f.kcal * prop; total.p += f.p * prop; total.c += f.c * prop; total.f += f.f * prop; }
-            });
-
-            const cur = getCurData();
-            const targetDate = editingMealDate || cur.lastActiveDate || getDietDateStr();
-            const mealObj = { id: editingMealId || Date.now(), category: document.getElementById('meal-category').value, foods: tempMeal, ...total };
-            
-            if(!cur.meals[targetDate]) cur.meals[targetDate] = [];
-            if (editingMealId) {
-                const idx = cur.meals[targetDate].findIndex(m => m.id === editingMealId);
-                if(idx > -1) cur.meals[targetDate][idx] = mealObj;
-            } else { cur.meals[targetDate].push(mealObj); }
-            
-            saveData(); navigateTab('view-dashboard');
-        }
-
-        window.openSelectFoodView = function() { document.getElementById('search-food').value = ''; document.getElementById('sort-food').value = 'name'; renderFoodList(); showView('view-select-food'); }
-
-        window.renderFoodList = function() {
-            const listEl = document.getElementById('food-list'), filter = document.getElementById('search-food').value.toLowerCase(), sortVal = document.getElementById('sort-food').value;
-            let arr = [...appData.foods];
-            if(filter) arr = arr.filter(f => f.name.toLowerCase().includes(filter));
-            
-            arr.sort((a, b) => {
-                if(sortVal === 'name') return a.name.localeCompare(b.name);
-                if(sortVal === 'kcal') return b.kcal - a.kcal;
-                if(sortVal === 'p') return b.p - a.p;
-                if(sortVal === 'c') return b.c - a.c;
-                if(sortVal === 'f') return b.f - a.f;
-                return 0;
-            });
-
-            listEl.innerHTML = '';
-            if (arr.length === 0) { document.getElementById('empty-food-list').classList.remove('hidden'); } 
-            else {
-                document.getElementById('empty-food-list').classList.add('hidden');
-                arr.forEach(f => {
-                    listEl.insertAdjacentHTML('beforeend', `
-                        <div class="card p-3 flex flex-col mb-2">
-                            <div class="flex justify-between items-start">
-                                <div class="flex-1 cursor-pointer pr-2" onclick="openAmountModal(${f.id})">
-                                    <div class="font-bold text-gray-800 text-sm">${f.name}</div>
-                                    <div class="text-[10px] text-gray-500">${Math.round(f.kcal)} kcal / ${f.portion}${f.unit} | P:${Math.round(f.p)} C:${Math.round(f.c)} G:${Math.round(f.f)}</div>
-                                </div>
-                                <div class="flex space-x-2">
-                                    <button onclick="editFood(${f.id})" class="text-blue-500 bg-blue-50 p-1.5 rounded"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                                    <button onclick="deleteFood(${f.id})" class="text-red-500 bg-red-50 p-1.5 rounded"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                                </div>
-                            </div>
-                            <button onclick="openAmountModal(${f.id})" class="mt-2 w-full text-center text-xs font-bold text-emerald-600 bg-emerald-50 py-1.5 rounded">Adicionar à Refeição</button>
-                        </div>
-                    `);
-                });
-            }
-        }
-
-        window.openCreateFoodView = function() {
-            editingFoodId = null; document.getElementById('food-view-title').textContent = "Criar Alimento";
-            document.getElementById('form-create-food').reset(); calculateKcalAuto(); showView('view-create-food');
-        }
-
-        window.editFood = function(id) {
-            const f = appData.foods.find(x => x.id === id);
-            if(!f) return;
-            editingFoodId = id; document.getElementById('food-view-title').textContent = "Editar Alimento";
-            document.getElementById('cf-name').value = f.name; document.getElementById('cf-unit').value = f.unit;
-            document.getElementById('cf-portion').value = f.portion; document.getElementById('cf-p').value = f.p;
-            document.getElementById('cf-c').value = f.c; document.getElementById('cf-f').value = f.f;
-            calculateKcalAuto(); showView('view-create-food');
-        }
-
-        window.deleteFood = function(id) {
-            if(confirm("Excluir este alimento da base geral?")) {
-                appData.foods = appData.foods.filter(x => x.id !== id);
-                saveData(); renderFoodList();
-            }
-        }
-
-        window.calculateKcalAuto = function() {
-            const p = parseFloat(document.getElementById('cf-p').value) || 0;
-            const c = parseFloat(document.getElementById('cf-c').value) || 0;
-            const f = parseFloat(document.getElementById('cf-f').value) || 0;
-            const kcal = (p * 4) + (c * 4) + (f * 9);
-            document.getElementById('cf-kcal').value = kcal.toFixed(1);
-        }
-
-        function handleCreateFoodSubmit(e) {
-            e.preventDefault();
-            const foodObj = {
-                id: editingFoodId || Date.now(),
-                name: document.getElementById('cf-name').value,
-                unit: document.getElementById('cf-unit').value,
-                portion: parseFloat(document.getElementById('cf-portion').value),
-                p: parseFloat(document.getElementById('cf-p').value),
-                c: parseFloat(document.getElementById('cf-c').value),
-                f: parseFloat(document.getElementById('cf-f').value),
-                kcal: parseFloat(document.getElementById('cf-kcal').value)
-            };
-
-            if(editingFoodId) {
-                const idx = appData.foods.findIndex(x => x.id === editingFoodId);
-                if(idx > -1) appData.foods[idx] = foodObj;
-            } else { appData.foods.push(foodObj); }
-            saveData(); openSelectFoodView();
-        }
-
-        window.openAmountModal = function(foodId) {
-            selectedFoodToAdd = appData.foods.find(f => f.id === foodId);
-            if(!selectedFoodToAdd) return;
-            document.getElementById('modal-food-name').textContent = selectedFoodToAdd.name;
-            document.getElementById('modal-food-portion').textContent = `${selectedFoodToAdd.portion}${selectedFoodToAdd.unit}`;
-            document.getElementById('modal-food-kcal').textContent = `${Math.round(selectedFoodToAdd.kcal)}kcal`;
-            document.getElementById('modal-food-unit').textContent = selectedFoodToAdd.unit;
-            document.getElementById('modal-amount-input').value = selectedFoodToAdd.portion;
-            
-            const modal = document.getElementById('modal-amount'); modal.classList.remove('hidden');
-            setTimeout(() => { document.getElementById('modal-amount-content').classList.remove('scale-95'); document.getElementById('modal-amount-content').classList.add('scale-100'); document.getElementById('modal-amount-input').focus(); }, 10);
-        }
-
-        window.closeAmountModal = function() {
-            document.getElementById('modal-amount-content').classList.remove('scale-100'); document.getElementById('modal-amount-content').classList.add('scale-95');
-            setTimeout(() => { document.getElementById('modal-amount').classList.add('hidden'); }, 200);
-        }
-
-        window.confirmAddFoodToMeal = function() {
-            const amount = parseFloat(document.getElementById('modal-amount-input').value);
-            if(!amount || amount <= 0) return alert("Quantidade inválida.");
-            tempMeal.push({ foodId: selectedFoodToAdd.id, amount: amount });
-            closeAmountModal(); updateAddMealUI(); showView('view-add-meal');
-        }
-
-        function renderHistory() {
-            const cur = getCurData(), listEl = document.getElementById('history-list'), emptyEl = document.getElementById('empty-history');
-            listEl.innerHTML = '';
-            
-            const dates = Object.keys(cur.meals).filter(d => d !== getDietDateStr()).sort((a, b) => b.localeCompare(a));
-            if(dates.length === 0) { emptyEl.classList.remove('hidden'); } else {
-                emptyEl.classList.add('hidden');
-                dates.forEach(dateStr => {
-                    const c = getDailySummary(dateStr).consumed, g = getDailySummary(dateStr).goals, isOver = c.kcal > g.kcal;
-                    listEl.insertAdjacentHTML('beforeend', `
-                        <div class="card p-4">
-                            <div class="flex justify-between items-center border-b pb-2 mb-3">
-                                <h3 class="font-bold text-gray-800">${formatDisplayDate(dateStr)}</h3>
-                                <span class="text-xs font-bold px-2 py-1 rounded-full ${isOver ? 'bg-red-100 text-red-600' : 'bg-emerald-100 text-emerald-600'}">${Math.round(c.kcal)} / ${Math.round(g.kcal)} kcal</span>
-                            </div>
-                            <div class="flex justify-between text-xs text-gray-500 mb-3"><span>P: ${Math.round(c.p)}g</span><span>C: ${Math.round(c.c)}g</span><span>G: ${Math.round(c.f)}g</span></div>
-                            <details class="text-sm"><summary class="cursor-pointer text-emerald-600 font-medium outline-none">Ver refeições</summary><div class="mt-2 space-y-2 pt-2 border-t" id="hist-meals-${dateStr}"></div></details>
-                        </div>
-                    `);
-                    renderMealList(dateStr, `hist-meals-${dateStr}`, 'empty-meals', false);
-                });
-            }
-        }
-
-        function loadSettingsForm() {
-            const p = getCurData().profile;
-            document.getElementById('settings-profile-name').textContent = appData.activeProfile;
-            if(!p) return;
-            document.getElementById('set-weight').value = p.weight; document.getElementById('set-height').value = p.height;
-            document.getElementById('set-age').value = p.age; document.getElementById('set-gender').value = p.gender;
-            document.getElementById('set-kcal').value = p.goalKcal || ''; document.getElementById('set-protein').value = p.goalP || '';
-            document.getElementById('set-carbs').value = p.goalC || ''; document.getElementById('set-fat').value = p.goalF || '';
-        }
-
-        function handleSettingsSubmit(e) {
-            e.preventDefault();
-            getCurData().profile = {
-                weight: parseFloat(document.getElementById('set-weight').value), height: parseInt(document.getElementById('set-height').value),
-                age: parseInt(document.getElementById('set-age').value), gender: document.getElementById('set-gender').value,
-                goalKcal: parseInt(document.getElementById('set-kcal').value) || 0, goalP: parseInt(document.getElementById('set-protein').value) || 0,
-                goalC: parseInt(document.getElementById('set-carbs').value) || 0, goalF: parseInt(document.getElementById('set-fat').value) || 0
-            };
-            saveData(); alert("Perfil e metas atualizados!");
-        }
-
-        function handleOnboardingSubmit(e) {
-            e.preventDefault();
-            const cur = getCurData();
-            cur.profile = {
-                weight: parseFloat(document.getElementById('onb-weight').value), height: parseInt(document.getElementById('onb-height').value),
-                age: parseInt(document.getElementById('onb-age').value), gender: document.getElementById('onb-gender').value,
-                goalKcal: parseInt(document.getElementById('onb-kcal').value) || 0, goalP: parseInt(document.getElementById('onb-protein').value) || 0,
-                goalC: parseInt(document.getElementById('onb-carbs').value) || 0, goalF: parseInt(document.getElementById('onb-fat').value) || 0
-            };
-            cur.lastActiveDate = getDietDateStr();
-            saveData(); navigateTab('view-dashboard');
-        }
-
-        let reviewYesterdayStr = null, reviewTodayStr = null, reviewDiffKcal = 0;
-        function prepareDayReview(yesterdayStr, todayStr) {
-            reviewYesterdayStr = yesterdayStr; reviewTodayStr = todayStr;
-            const summary = getDailySummary(yesterdayStr); reviewDiffKcal = summary.goals.kcal - summary.consumed.kcal; 
-
-            document.getElementById('review-date-label').textContent = formatDisplayDate(yesterdayStr);
-            const diffEl = document.getElementById('review-kcal-diff'), descEl = document.getElementById('review-kcal-desc');
-            
-            if (reviewDiffKcal > 0) { diffEl.textContent = "+" + Math.round(reviewDiffKcal); diffEl.className = "text-4xl font-bold mb-1 text-emerald-500"; descEl.textContent = "kcal não consumidas (sobraram)"; } 
-            else if (reviewDiffKcal < 0) { diffEl.textContent = Math.round(reviewDiffKcal); diffEl.className = "text-4xl font-bold mb-1 text-red-500"; descEl.textContent = "kcal excedidas além da meta"; } 
-            else { diffEl.textContent = "0"; diffEl.className = "text-4xl font-bold mb-1 text-gray-800"; descEl.textContent = "Você atingiu a meta perfeitamente!"; document.getElementById('review-compensate').disabled = true; }
-
-            document.getElementById('review-p').textContent = Math.round(summary.consumed.p) + "g"; document.getElementById('review-c').textContent = Math.round(summary.consumed.c) + "g"; document.getElementById('review-f').textContent = Math.round(summary.consumed.f) + "g";
-            showView('view-day-review');
-        }
-
-        document.getElementById('btn-finish-review').addEventListener('click', () => {
-            const cur = getCurData();
-            if (document.getElementById('review-compensate').checked && reviewDiffKcal !== 0) cur.dailyAdjustments[reviewTodayStr] = reviewDiffKcal;
-            cur.lastActiveDate = reviewTodayStr;
-            saveData(); document.getElementById('review-compensate').checked = false; navigateTab('view-dashboard');
+        renderizarListas(listaAtual);
+    };
+
+    onSnapshot(produtosCol, (snapshot) => {
+        const produtos = [];
+        snapshot.forEach((doc) => {
+            produtos.push({ id: doc.id, ...doc.data() });
         });
 
-        window.resetDataDebug = function() {
-            if(confirm(`Isso apagará todos os dados de dieta, refeições e metas do perfil atual (${appData.activeProfile}). Tem certeza?`)) {
-                appData.profiles[appData.activeProfile] = { password: '', profile: null, meals: {}, dailyAdjustments: {}, lastActiveDate: null };
-                saveData(); showLockView();
-            }
+        let ordemIds = getOrdemSalva();
+        produtos.sort((a, b) => {
+            if (a.comprado !== b.comprado) return a.comprado ? 1 : -1;
+            let idxA = ordemIds.indexOf(a.id);
+            let idxB = ordemIds.indexOf(b.id);
+            if (idxA === -1) idxA = 99999;
+            if (idxB === -1) idxB = 99999;
+            return idxA - idxB;
+        });
+
+        listaAtual = produtos;
+        renderizarListas(listaAtual);
+    });
+
+    document.getElementById('formProduto').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const nomeInput = document.getElementById('nome');
+        const categoriaInput = document.getElementById('categoria');
+        
+        const docRef = await addDoc(produtosCol, {
+            nome: nomeInput.value, 
+            categoria: categoriaInput.value, 
+            quantidade: 1, 
+            preco: 0, 
+            comprado: false
+        });
+
+        let ordemIds = getOrdemSalva();
+        ordemIds.unshift(docRef.id);
+        salvarOrdem(ordemIds);
+        
+        // Limpa apenas o nome, mantendo a última categoria selecionada
+        nomeInput.value = '';
+        nomeInput.focus();
+    });
+
+    window.atualizarProduto = async (id, quantidade, preco, comprado) => {
+        const produtoRef = doc(db, "produtos", id);
+        await updateDoc(produtoRef, {
+            quantidade: parseFloat(quantidade) || 0,
+            preco: parseFloat(preco) || 0,
+            comprado: comprado
+        });
+    };
+
+    window.removerProduto = async (id) => {
+        if (confirm('Remover este item?')) {
+            await deleteDoc(doc(db, "produtos", id));
+            let ordemIds = getOrdemSalva().filter(itemId => itemId !== id);
+            salvarOrdem(ordemIds);
         }
-    </script>
+    };
+
+    window.moverItem = (id, direcao) => {
+        const index = listaAtual.findIndex(p => p.id === id);
+        if (index === -1) return;
+        const targetIndex = index + direcao;
+        
+        if (targetIndex < 0 || targetIndex >= listaAtual.length) return;
+        if (listaAtual[index].comprado !== listaAtual[targetIndex].comprado) return;
+
+        const temp = listaAtual[index];
+        listaAtual[index] = listaAtual[targetIndex];
+        listaAtual[targetIndex] = temp;
+
+        salvarOrdem(listaAtual.map(p => p.id));
+        renderizarListas(listaAtual);
+    };
+
+    function gerarHTMLProduto(prod) {
+        const classeCat = "cat-" + prod.categoria.toLowerCase().replace(/[^a-z0-9]/g, '');
+        return `
+            <div class="produto-item ${prod.comprado ? 'comprado' : ''}">
+                <div class="ordem-coluna">
+                    <button class="btn-ordem" onclick="moverItem('${prod.id}', -1)">▲</button>
+                    <button class="btn-ordem" onclick="moverItem('${prod.id}', 1)">▼</button>
+                </div>
+                <div class="produto-corpo">
+                    <div class="produto-header">
+                        <button type="button" class="btn-cart ${prod.comprado ? 'ativo' : ''}" 
+                            onclick="atualizarProduto('${prod.id}', ${prod.quantidade}, ${prod.preco}, ${!prod.comprado})">
+                            🛒
+                        </button>
+                        <div class="info-main">
+                            <span class="nome-produto">${prod.nome}</span>
+                            <span class="categoria-tag ${classeCat}">${prod.categoria}</span>
+                        </div>
+                        <button class="btn-remover" onclick="removerProduto('${prod.id}')">✕</button>
+                    </div>
+                    <div class="produto-inputs">
+                        <div class="input-box">
+                            <label>Qtd:</label>
+                            <input type="number" step="0.1" min="0" value="${prod.quantidade}" 
+                                onchange="atualizarProduto('${prod.id}', this.value, ${prod.preco}, ${prod.comprado})">
+                        </div>
+                        <div class="input-box">
+                            <label>R$:</label>
+                            <input type="number" step="0.01" min="0" value="${prod.preco}" 
+                                onchange="atualizarProduto('${prod.id}', ${prod.quantidade}, this.value, ${prod.comprado})">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderizarListas(produtos) {
+        const divAComprar = document.getElementById('listaAComprar');
+        const divCarrinho = document.getElementById('listaNoCarrinho');
+        
+        divAComprar.innerHTML = '';
+        divCarrinho.innerHTML = '';
+        let valorTotal = 0;
+
+        // Aplica o filtro selecionado (se houver algum ativo)
+        const produtosFiltrados = produtos.filter(p => filtrosAtivos.size === 0 || filtrosAtivos.has(p.categoria));
+
+        produtosFiltrados.forEach((prod) => {
+            if (prod.comprado) valorTotal += (prod.quantidade * prod.preco);
+
+            const html = gerarHTMLProduto(prod);
+            
+            if (prod.comprado) {
+                divCarrinho.innerHTML += html;
+            } else {
+                divAComprar.innerHTML += html;
+            }
+        });
+
+        // Oculta títulos se a lista correspondente estiver vazia
+        divAComprar.previousElementSibling.style.display = divAComprar.innerHTML ? 'block' : 'none';
+        divCarrinho.previousElementSibling.style.display = divCarrinho.innerHTML ? 'block' : 'none';
+
+        document.getElementById('valorTotal').innerText = valorTotal.toFixed(2);
+    }
+
+    window.onload = inicializarFiltros;
+</script>
 </body>
 </html>
